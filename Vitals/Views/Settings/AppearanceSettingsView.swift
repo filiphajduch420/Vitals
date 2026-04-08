@@ -3,6 +3,7 @@ import SwiftUI
 struct AppearanceSettingsView: View {
 
     @Environment(AppState.self) private var appState
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Form {
@@ -53,7 +54,7 @@ struct AppearanceSettingsView: View {
                     .padding(12)
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(.black.opacity(appState.glassOpacity))
+                            .fill((colorScheme == .dark ? Color.black : Color.white).opacity(appState.glassOpacity))
                     )
                 }
                 .frame(height: 46)

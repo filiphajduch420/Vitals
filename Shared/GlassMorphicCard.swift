@@ -53,7 +53,12 @@ private struct ScaledFontModifier: ViewModifier {
 struct GlassMorphicCard<Content: View>: View {
     @Environment(\.glassOpacity) private var glassOpacity
     @Environment(\.glassVariantEnv) private var glassVariant
+    @Environment(\.colorScheme) private var colorScheme
     @ViewBuilder let content: () -> Content
+
+    private var overlayColor: Color {
+        colorScheme == .dark ? .black : .white
+    }
 
     var body: some View {
         content()
@@ -61,7 +66,7 @@ struct GlassMorphicCard<Content: View>: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.black.opacity(glassOpacity))
+                    .fill(overlayColor.opacity(glassOpacity))
             )
             .background {
                 LiquidGlassBackgroundView(cornerRadius: 16, variant: glassVariant)
