@@ -174,14 +174,19 @@ final class StatusBarController {
         guard let button = statusItem.button else { return }
         let buttonFrame = button.window?.convertToScreen(button.frame) ?? .zero
 
+        // Cap height to available screen space (menu bar to dock)
+        let screen = NSScreen.main ?? NSScreen.screens.first!
+        let maxHeight = buttonFrame.minY - screen.visibleFrame.origin.y - 16
+
         panel.contentView?.invalidateIntrinsicContentSize()
         let contentSize = panel.contentView?.fittingSize ?? NSSize(width: 290, height: 500)
         let panelWidth = contentSize.width
+        let panelHeight = min(contentSize.height, maxHeight)
 
         let x = buttonFrame.midX - panelWidth / 2
-        let y = buttonFrame.minY - 8 - contentSize.height
+        let y = buttonFrame.minY - 8 - panelHeight
 
-        panel.setFrame(NSRect(x: x, y: y, width: panelWidth, height: contentSize.height), display: true)
+        panel.setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelHeight), display: true)
         panel.orderFrontRegardless()
 
         // Close on outside click

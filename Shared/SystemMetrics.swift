@@ -203,7 +203,7 @@ enum MetricType: String, CaseIterable, Codable, Sendable, Identifiable {
 // MARK: - Popover Section (for drag & drop ordering)
 
 enum PopoverSection: String, CaseIterable, Codable, Sendable, Identifiable {
-    case system, cpu, memory, network, battery, disk, wifi
+    case cpu, memory, network, battery, disk, wifi, system
 
     var id: String { rawValue }
 

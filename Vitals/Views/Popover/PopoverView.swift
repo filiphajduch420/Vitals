@@ -5,38 +5,40 @@ struct PopoverView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Header in glass
-            GlassMorphicCard {
-                HStack {
-                    Text("Vitals")
-                        .scaledFont(16, weight: .bold, design: .rounded)
-                    Spacer()
-                    Button {
-                        NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Activity Monitor.app"))
-                    } label: {
-                        Image(systemName: "gauge.with.dots.needle.33percent")
-                            .scaledFont(13, weight: .medium)
-                            .frame(width: 28, height: 28)
-                    }
-                    .buttonStyle(.plain)
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 8) {
+                // Header in glass
+                GlassMorphicCard {
+                    HStack {
+                        Text("Vitals")
+                            .scaledFont(16, weight: .bold, design: .rounded)
+                        Spacer()
+                        Button {
+                            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Activity Monitor.app"))
+                        } label: {
+                            Image(systemName: "gauge.with.dots.needle.33percent")
+                                .scaledFont(13, weight: .medium)
+                                .frame(width: 28, height: 28)
+                        }
+                        .buttonStyle(.plain)
 
-                    SettingsLink {
-                        Image(systemName: "gearshape.fill")
-                            .scaledFont(13, weight: .medium)
-                            .frame(width: 28, height: 28)
+                        SettingsLink {
+                            Image(systemName: "gearshape.fill")
+                                .scaledFont(13, weight: .medium)
+                                .frame(width: 28, height: 28)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+
+                ForEach(appState.sectionOrder) { section in
+                    if appState.isSectionVisible(section) {
+                        sectionView(for: section)
+                    }
                 }
             }
-
-            ForEach(appState.sectionOrder) { section in
-                if appState.isSectionVisible(section) {
-                    sectionView(for: section)
-                }
-            }
+            .padding(10)
         }
-        .padding(10)
         .environment(\.glassOpacity, appState.glassOpacity)
         .environment(\.glassVariantEnv, appState.glassVariant)
         .environment(\.textScale, appState.textScale)
