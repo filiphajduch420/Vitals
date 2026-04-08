@@ -1,0 +1,57 @@
+name: Vitals
+options:
+  bundleIdPrefix: com.filiphajduch
+  deploymentTarget:
+    macOS: "26.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+
+targets:
+  Vitals:
+    type: application
+    platform: macOS
+    sources:
+      - path: Vitals
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.filiphajduch.vitals
+        INFOPLIST_FILE: Vitals/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Vitals/Resources/Vitals.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: false
+        PRODUCT_NAME: Vitals
+    dependencies:
+      - target: VitalsWidgets
+        embed: true
+
+  VitalsWidgets:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: VitalsWidgets
+      - path: Shared
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.filiphajduch.vitals.widgets
+        INFOPLIST_FILE: VitalsWidgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: VitalsWidgets/VitalsWidgets.entitlements
+        GENERATE_INFOPLIST_FILE: false
+        PRODUCT_NAME: VitalsWidgets
+        SWIFT_STRICT_CONCURRENCY: targeted
+
+schemes:
+  Vitals:
+    build:
+      targets:
+        Vitals: all
+        VitalsWidgets: all
+    run:
+      config: Debug
+      executable: Vitals
