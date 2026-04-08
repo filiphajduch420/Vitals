@@ -49,8 +49,15 @@ struct GeneralSettingsView: View {
             }
 
             Section("About") {
-                LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                 LabeledContent("App", value: "Vitals")
+                LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
+                LabeledContent("Author", value: "Filip Hajduch")
+                HStack {
+                    Text("GitHub")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Link("filiphajduch420/Vitals", destination: URL(string: "https://github.com/filiphajduch420/Vitals")!)
+                }
             }
         }
         .formStyle(.grouped)

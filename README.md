@@ -4,6 +4,7 @@ A lightweight macOS menu bar app that monitors your system in real time with a b
 
 Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 
+
 ## Features
 
 - **Menu Bar** — Live CPU, memory, network, battery, disk stats right in your menu bar
@@ -16,6 +17,20 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 - **WiFi** — Connection status, signal strength (RSSI), link speed, channel
 - **System Info** — Computer name, user, macOS version, uptime
 - **Customizable** — Reorder sections, toggle visibility, adjust text size, choose glass style
+
+## Screenshots
+
+### Popover
+![Vitals Popover](media/gui.png)
+
+### Menu Bar
+![Menu Bar](media/menu_bar.png)
+
+### Settings - Appearance
+![Settings Appearance](media/settings_app.png)
+
+### Settings - General
+![Settings General](media/settings_general.png)
 
 ## Requirements
 
@@ -43,7 +58,7 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
    open Vitals.xcodeproj
    ```
 
-4. Select the **Vitals** scheme, set your signing team, and hit **Run** (⌘R).
+4. Select the **Vitals** scheme, set your signing team, and hit **Run** (Cmd+R).
 
 ### Download release
 
