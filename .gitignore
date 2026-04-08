@@ -14,5 +14,8 @@ Vitals.xcodeproj/
 *.swp
 *~
 
+# Scripts
+scripts/
+
 # Claude
 .claude/
