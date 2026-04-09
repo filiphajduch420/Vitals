@@ -123,12 +123,32 @@ struct AppearanceSettingsView: View {
                         }
                     }
                 }
+                Button {
+                    resetToDefaults()
+                } label: {
+                    Label("Reset to Default", systemImage: "arrow.counterclockwise")
+                }
+                .buttonStyle(.borderless)
             } header: {
                 Label("Section Order", systemImage: "list.bullet")
             }
         }
         .formStyle(.grouped)
         .padding()
+    }
+
+    private func resetToDefaults() {
+        withAnimation {
+            appState.sectionOrder = PopoverSection.allCases
+            appState.sectionCPU = true
+            appState.sectionGPU = true
+            appState.sectionMemory = true
+            appState.sectionBattery = true
+            appState.sectionSystem = true
+            appState.sectionDisk = false
+            appState.sectionWiFi = false
+            appState.sectionNetwork = false
+        }
     }
 
     private func moveSection(at index: Int, direction: Int) {
@@ -143,6 +163,7 @@ struct AppearanceSettingsView: View {
         switch section {
         case .system:  return binding(\.sectionSystem)
         case .cpu:     return binding(\.sectionCPU)
+        case .gpu:     return binding(\.sectionGPU)
         case .memory:  return binding(\.sectionMemory)
         case .network: return binding(\.sectionNetwork)
         case .battery: return binding(\.sectionBattery)

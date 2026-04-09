@@ -9,6 +9,7 @@ actor SystemMonitor {
     private let diskMonitor: DiskMonitor
     private let thermalMonitor: ThermalMonitor
     private let wifiMonitor: WiFiMonitor
+    private let gpuMonitor: GPUMonitor
     private let systemInfoMonitor: SystemInfoMonitor
 
     private var pollingTask: Task<Void, Never>?
@@ -23,6 +24,7 @@ actor SystemMonitor {
         diskMonitor = DiskMonitor()
         thermalMonitor = ThermalMonitor()
         wifiMonitor = WiFiMonitor()
+        gpuMonitor = GPUMonitor()
         systemInfoMonitor = SystemInfoMonitor()
         hasBattery = BatteryMonitor().isAvailable
     }
@@ -52,6 +54,7 @@ actor SystemMonitor {
         let disk = diskMonitor.read()
         let thermal = thermalMonitor.read()
         let wifi = wifiMonitor.read()
+        let gpu = gpuMonitor.read(gpuTemp: thermal.gpuTemperature)
         let systemInfo = systemInfoMonitor.read()
         let uptime = ProcessInfo.processInfo.systemUptime
 
@@ -64,6 +67,7 @@ actor SystemMonitor {
             disk: disk,
             thermal: thermal,
             wifi: wifi,
+            gpu: gpu,
             systemInfo: systemInfo,
             uptime: uptime
         )

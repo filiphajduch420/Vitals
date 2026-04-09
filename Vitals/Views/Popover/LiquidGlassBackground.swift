@@ -2,49 +2,50 @@ import SwiftUI
 import AppKit
 import ObjectiveC
 
-// MARK: - Glass Variant
+// MARK: - Container that prevents layout recursion
 
-enum GlassVariant: Int, CaseIterable, Codable, Sendable, Identifiable {
-    case a = 11
-    case b = 0
-    case c = 2
-
-    var id: Int { rawValue }
-
-    var label: String {
-        switch self {
-        case .a: return "A"
-        case .b: return "B"
-        case .c: return "C"
+private class GlassContainerView: NSView {
+    override func layout() {
+        super.layout()
+        // Resize glass subview to match without triggering layoutSubtreeIfNeeded
+        if let glass = subviews.first {
+            glass.frame = bounds
         }
     }
-
-    static let `default`: GlassVariant = .a
 }
 
-// MARK: - Glass background only (no content management — SwiftUI handles layout)
+// MARK: - Glass background only
 
 struct LiquidGlassBackgroundView: NSViewRepresentable {
     let cornerRadius: CGFloat
     let variant: GlassVariant
 
     func makeNSView(context: Context) -> NSView {
+        let container = GlassContainerView()
+        container.wantsLayer = true
+
         if let glassType = NSClassFromString("NSGlassEffectView") as? NSView.Type {
             let glass = glassType.init(frame: .zero)
             glass.setValue(cornerRadius, forKey: "cornerRadius")
             setVariant(on: glass, value: variant.rawValue)
-            return glass
+            glass.autoresizingMask = [.width, .height]
+            container.addSubview(glass)
+        } else {
+            let fallback = NSVisualEffectView()
+            fallback.material = .underWindowBackground
+            fallback.wantsLayer = true
+            fallback.layer?.cornerRadius = cornerRadius
+            fallback.autoresizingMask = [.width, .height]
+            container.addSubview(fallback)
         }
-        let fallback = NSVisualEffectView()
-        fallback.material = .underWindowBackground
-        fallback.wantsLayer = true
-        fallback.layer?.cornerRadius = cornerRadius
-        return fallback
+
+        return container
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
-        nsView.setValue(cornerRadius, forKey: "cornerRadius")
-        setVariant(on: nsView, value: variant.rawValue)
+        guard let glass = nsView.subviews.first else { return }
+        glass.setValue(cornerRadius, forKey: "cornerRadius")
+        setVariant(on: glass, value: variant.rawValue)
     }
 
     private typealias VariantSetterIMP = @convention(c) (AnyObject, Selector, Int) -> Void

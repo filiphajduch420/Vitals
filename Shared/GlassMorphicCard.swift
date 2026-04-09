@@ -48,7 +48,7 @@ private struct ScaledFontModifier: ViewModifier {
     }
 }
 
-// MARK: - Glass card using NSGlassEffectView
+// MARK: - Glass card
 
 struct GlassMorphicCard<Content: View>: View {
     @Environment(\.glassOpacity) private var glassOpacity
@@ -68,8 +68,15 @@ struct GlassMorphicCard<Content: View>: View {
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(overlayColor.opacity(glassOpacity))
             )
+            #if MAIN_APP
             .background {
                 LiquidGlassBackgroundView(cornerRadius: 16, variant: glassVariant)
             }
+            #else
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+            )
+            #endif
     }
 }

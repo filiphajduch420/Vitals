@@ -4,8 +4,9 @@ import WidgetKit
 @main
 struct VitalsWidgetBundle: WidgetBundle {
     var body: some Widget {
-        SingleMetricWidget()
-        DualMetricWidget()
-        QuadMetricWidget()
+        SystemHealthWidget()
+        StorageWidget()
+        BatteryWidget()
+        NetworkInfoWidget()
     }
 }

@@ -36,16 +36,47 @@ struct GeneralSettingsView: View {
                 .pickerStyle(.segmented)
             }
 
-            Section("Menu Bar Items") {
-                Toggle("CPU Usage", isOn: binding(\.barCPUUsage))
-                Toggle("CPU Temperature", isOn: binding(\.barCPUTemp))
-                Toggle("Fan Speed", isOn: binding(\.barFanRPM))
-                Toggle("System Power", isOn: binding(\.barPower))
-                Toggle("Memory", isOn: binding(\.barMemory))
-                Toggle("Network Download", isOn: binding(\.barNetworkDown))
-                Toggle("Network Upload", isOn: binding(\.barNetworkUp))
-                Toggle("Battery", isOn: binding(\.barBattery))
-                Toggle("Disk Usage", isOn: binding(\.barDisk))
+            Section {
+                ForEach(Array(appState.menuBarOrder.enumerated()), id: \.element) { index, item in
+                    HStack(spacing: 10) {
+                        Toggle(isOn: menuBarBinding(for: item)) {
+                            Text(item.label)
+                        }
+
+                        Spacer()
+
+                        HStack(spacing: 2) {
+                            Button {
+                                moveMenuBarItem(at: index, direction: -1)
+                            } label: {
+                                Image(systemName: "chevron.up")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .frame(width: 22, height: 22)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(index == 0)
+
+                            Button {
+                                moveMenuBarItem(at: index, direction: 1)
+                            } label: {
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .frame(width: 22, height: 22)
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(index == appState.menuBarOrder.count - 1)
+                        }
+                    }
+                }
+
+                Button {
+                    resetMenuBarDefaults()
+                } label: {
+                    Label("Reset to Default", systemImage: "arrow.counterclockwise")
+                }
+                .buttonStyle(.borderless)
+            } header: {
+                Label("Menu Bar Items", systemImage: "menubar.rectangle")
             }
 
             Section("About") {
@@ -64,10 +95,37 @@ struct GeneralSettingsView: View {
         .padding()
     }
 
-    private func binding(_ keyPath: ReferenceWritableKeyPath<AppState, Bool>) -> Binding<Bool> {
-        Binding(
-            get: { appState[keyPath: keyPath] },
-            set: { appState[keyPath: keyPath] = $0 }
+    private func moveMenuBarItem(at index: Int, direction: Int) {
+        let newIndex = index + direction
+        guard newIndex >= 0, newIndex < appState.menuBarOrder.count else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            appState.menuBarOrder.swapAt(index, newIndex)
+        }
+    }
+
+    private func resetMenuBarDefaults() {
+        withAnimation {
+            appState.menuBarOrder = MenuBarItem.allCases
+            appState.barCPUUsage = true
+            appState.barCPUTemp = false
+            appState.barFanRPM = false
+            appState.barGPU = true
+            appState.barPower = false
+            appState.barMemory = true
+            appState.barNetworkDown = false
+            appState.barNetworkUp = false
+            appState.barBattery = false
+            appState.barBatteryTime = false
+            appState.barDisk = false
+            appState.barIP = false
+        }
+    }
+
+    private func menuBarBinding(for item: MenuBarItem) -> Binding<Bool> {
+        let kp = appState.menuBarBinding(for: item)
+        return Binding(
+            get: { appState[keyPath: kp] },
+            set: { appState[keyPath: kp] = $0 }
         )
     }
 }

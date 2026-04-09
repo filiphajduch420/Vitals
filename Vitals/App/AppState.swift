@@ -14,6 +14,7 @@ final class AppState {
     var diskHistory = MetricHistory(capacity: 60)
 
     private let monitor = SystemMonitor()
+    private var lastWidgetRefresh: Date = .distantPast
 
     // MARK: - Menu Bar Items (granular toggles)
 
@@ -24,9 +25,15 @@ final class AppState {
     var barNetworkDown: Bool = true { didSet { save(barNetworkDown, forKey: "barNetworkDown") } }
     var barNetworkUp: Bool = true { didSet { save(barNetworkUp, forKey: "barNetworkUp") } }
     var barBattery: Bool = true { didSet { save(barBattery, forKey: "barBattery") } }
-    var barGPUTemp: Bool = false { didSet { save(barGPUTemp, forKey: "barGPUTemp") } }
+    var barGPU: Bool = false { didSet { save(barGPU, forKey: "barGPU") } }
     var barPower: Bool = false { didSet { save(barPower, forKey: "barPower") } }
     var barDisk: Bool = false { didSet { save(barDisk, forKey: "barDisk") } }
+    var barIP: Bool = false { didSet { save(barIP, forKey: "barIP") } }
+    var barBatteryTime: Bool = false { didSet { save(barBatteryTime, forKey: "barBatteryTime") } }
+
+    var menuBarOrder: [MenuBarItem] = MenuBarItem.allCases {
+        didSet { saveMenuBarOrder() }
+    }
 
     // Backwards compat helpers for popover toggle icons
     var showCPU: Bool { barCPUUsage }
@@ -43,6 +50,7 @@ final class AppState {
     var sectionBattery: Bool = true { didSet { save(sectionBattery, forKey: "sectionBattery") } }
     var sectionDisk: Bool = true { didSet { save(sectionDisk, forKey: "sectionDisk") } }
     var sectionWiFi: Bool = true { didSet { save(sectionWiFi, forKey: "sectionWiFi") } }
+    var sectionGPU: Bool = true { didSet { save(sectionGPU, forKey: "sectionGPU") } }
     var sectionSystem: Bool = true { didSet { save(sectionSystem, forKey: "sectionSystem") } }
 
     var sectionOrder: [PopoverSection] = PopoverSection.allCases {
@@ -105,19 +113,23 @@ final class AppState {
             d.set(false, forKey: "barCPUTemp")
             d.set(false, forKey: "barFanRPM")
             d.set(true, forKey: "barMemory")
-            d.set(true, forKey: "barNetworkDown")
-            d.set(true, forKey: "barNetworkUp")
-            d.set(true, forKey: "barBattery")
-            d.set(false, forKey: "barGPUTemp")
+            d.set(false, forKey: "barNetworkDown")
+            d.set(false, forKey: "barNetworkUp")
+            d.set(false, forKey: "barBattery")
+            d.set(false, forKey: "barBatteryTime")
             d.set(false, forKey: "barPower")
             d.set(false, forKey: "barDisk")
+            d.set(false, forKey: "barGPU")
+            d.set(false, forKey: "barIP")
             d.set(true, forKey: "sectionCPU")
+            d.set(true, forKey: "sectionGPU")
             d.set(true, forKey: "sectionMemory")
-            d.set(true, forKey: "sectionNetwork")
             d.set(true, forKey: "sectionBattery")
-            d.set(true, forKey: "sectionDisk")
-            d.set(true, forKey: "sectionWiFi")
             d.set(true, forKey: "sectionSystem")
+            d.set(false, forKey: "sectionDisk")
+            d.set(false, forKey: "sectionWiFi")
+            d.set(false, forKey: "sectionNetwork")
+            d.set(0.2, forKey: "glassOpacity")
             d.set(2.0, forKey: "updateInterval")
         }
 
@@ -128,9 +140,12 @@ final class AppState {
         barNetworkDown = d.bool(forKey: "barNetworkDown")
         barNetworkUp = d.bool(forKey: "barNetworkUp")
         barBattery = d.bool(forKey: "barBattery")
-        barGPUTemp = d.bool(forKey: "barGPUTemp")
+        barGPU = d.bool(forKey: "barGPU")
         barPower = d.bool(forKey: "barPower")
         barDisk = d.bool(forKey: "barDisk")
+        barIP = d.bool(forKey: "barIP")
+        barBatteryTime = d.bool(forKey: "barBatteryTime")
+        menuBarOrder = loadMenuBarOrder()
         sectionCPU = d.bool(forKey: "sectionCPU")
         sectionMemory = d.bool(forKey: "sectionMemory")
         sectionNetwork = d.bool(forKey: "sectionNetwork")
@@ -182,6 +197,14 @@ final class AppState {
         }
 
         DataSharingManager.writeMetrics(newMetrics)
+        throttledWidgetRefresh()
+    }
+
+    private func throttledWidgetRefresh() {
+        let now = Date()
+        // Refresh widgets every 30s — free when app is running, budget-counted otherwise
+        guard now.timeIntervalSince(lastWidgetRefresh) >= 30 else { return }
+        lastWidgetRefresh = now
         DataSharingManager.refreshWidgetsIfNeeded()
     }
 
@@ -189,6 +212,7 @@ final class AppState {
         switch section {
         case .system:  return sectionSystem
         case .cpu:     return sectionCPU
+        case .gpu:     return sectionGPU
         case .memory:  return sectionMemory
         case .network: return sectionNetwork
         case .battery: return sectionBattery && metrics.battery != nil
@@ -206,6 +230,56 @@ final class AppState {
     private func save(_ value: Int, forKey key: String) {
         UserDefaults.standard.set(value, forKey: key)
     }
+    func isMenuBarItemEnabled(_ item: MenuBarItem) -> Bool {
+        switch item {
+        case .cpuUsage:    return barCPUUsage
+        case .cpuTemp:     return barCPUTemp
+        case .fanRPM:      return barFanRPM
+        case .gpu:         return barGPU
+        case .power:       return barPower
+        case .memory:      return barMemory
+        case .networkDown: return barNetworkDown
+        case .networkUp:   return barNetworkUp
+        case .battery:     return barBattery
+        case .batteryTime: return barBatteryTime
+        case .disk:        return barDisk
+        case .ip:          return barIP
+        }
+    }
+
+    func menuBarBinding(for item: MenuBarItem) -> ReferenceWritableKeyPath<AppState, Bool> {
+        switch item {
+        case .cpuUsage:    return \.barCPUUsage
+        case .cpuTemp:     return \.barCPUTemp
+        case .fanRPM:      return \.barFanRPM
+        case .gpu:         return \.barGPU
+        case .power:       return \.barPower
+        case .memory:      return \.barMemory
+        case .networkDown: return \.barNetworkDown
+        case .networkUp:   return \.barNetworkUp
+        case .battery:     return \.barBattery
+        case .batteryTime: return \.barBatteryTime
+        case .disk:        return \.barDisk
+        case .ip:          return \.barIP
+        }
+    }
+
+    private func saveMenuBarOrder() {
+        let raw = menuBarOrder.map(\.rawValue)
+        UserDefaults.standard.set(raw, forKey: "menuBarOrder")
+    }
+
+    private func loadMenuBarOrder() -> [MenuBarItem] {
+        guard let raw = UserDefaults.standard.stringArray(forKey: "menuBarOrder") else {
+            return MenuBarItem.allCases
+        }
+        var result = raw.compactMap { MenuBarItem(rawValue: $0) }
+        for item in MenuBarItem.allCases where !result.contains(item) {
+            result.append(item)
+        }
+        return result
+    }
+
     private func saveSectionOrder() {
         let raw = sectionOrder.map(\.rawValue)
         UserDefaults.standard.set(raw, forKey: "sectionOrder")
