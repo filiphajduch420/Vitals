@@ -11,6 +11,9 @@ settings:
     SWIFT_VERSION: "6.0"
     MACOSX_DEPLOYMENT_TARGET: "26.0"
     SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ULM9RV4JUS
+    APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
 
 targets:
   Vitals:
@@ -28,7 +31,6 @@ targets:
         GENERATE_INFOPLIST_FILE: false
         PRODUCT_NAME: Vitals
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: MAIN_APP
-        APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
     dependencies:
       - target: VitalsWidgets
         embed: true
@@ -47,7 +49,6 @@ targets:
         GENERATE_INFOPLIST_FILE: false
         PRODUCT_NAME: VitalsWidgets
         SWIFT_STRICT_CONCURRENCY: targeted
-        APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
 
 schemes:
   Vitals:

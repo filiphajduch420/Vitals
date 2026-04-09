@@ -2,6 +2,22 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.1] - 2026-04-09
+
+### Added
+- **Glass Reset to Default** — button in Appearance settings to reset glass style and opacity
+
+### Changed
+- **Section toggle real-time** — toggling sections in Settings now updates the popover instantly
+- **Panel full-height** — popover panel extends full screen height (transparent) so new sections appear without delay
+- **Network widget** — compact bottom row layout, units no longer cut off; removed small widget size
+- **Battery layout** — Health and Cycles left-aligned next to each other
+
+### Fixed
+- **Widget data sharing** — App Group ID now resolves correctly with DEVELOPMENT_TEAM
+- **Widget version mismatch** — widget bundle version matches main app (was causing widgets to disappear from gallery)
+- **WiFi SSID fallback** — added SystemConfiguration-based SSID reader as additional fallback
+
 ## [2.0] - 2026-04-09
 
 ### Added

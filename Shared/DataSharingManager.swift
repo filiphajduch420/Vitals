@@ -12,8 +12,17 @@ enum DataSharingManager {
     private static let fileName = "metrics.json"
 
     private static var sharedFileURL: URL? {
-        let url = FileManager.default
+        if let url = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: groupID)?
+            .appendingPathComponent(fileName) {
+            return url
+        }
+        // Fallback: construct Group Container path manually
+        guard !groupID.isEmpty else { return nil }
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let url = home
+            .appendingPathComponent("Library/Group Containers")
+            .appendingPathComponent(groupID)
             .appendingPathComponent(fileName)
         return url
     }

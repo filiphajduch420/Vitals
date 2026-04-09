@@ -58,6 +58,14 @@ struct AppearanceSettingsView: View {
                     )
                 }
                 .frame(height: 46)
+
+                Button {
+                    appState.glassVariant = .default
+                    appState.glassOpacity = 0.2
+                } label: {
+                    Label("Reset to Default", systemImage: "arrow.counterclockwise")
+                }
+                .buttonStyle(.borderless)
             } header: {
                 Label("Glass Effect", systemImage: "drop.halffull")
             }

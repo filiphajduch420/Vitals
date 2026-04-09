@@ -4,7 +4,13 @@ struct PopoverView: View {
 
     @Environment(AppState.self) private var appState
 
+    /// Computed in body scope so @Observable tracks all section visibility properties
+    private var visibleSections: [PopoverSection] {
+        appState.sectionOrder.filter { appState.isSectionVisible($0) }
+    }
+
     var body: some View {
+        let sections = visibleSections
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 8) {
                 // Header in glass
@@ -31,10 +37,8 @@ struct PopoverView: View {
                     }
                 }
 
-                ForEach(appState.sectionOrder) { section in
-                    if appState.isSectionVisible(section) {
-                        sectionView(for: section)
-                    }
+                ForEach(sections) { section in
+                    sectionView(for: section)
                 }
             }
             .padding(10)

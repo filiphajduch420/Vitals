@@ -7,6 +7,5 @@ struct VitalsWidgetBundle: WidgetBundle {
         SystemHealthWidget()
         StorageWidget()
         BatteryWidget()
-        NetworkInfoWidget()
     }
 }
