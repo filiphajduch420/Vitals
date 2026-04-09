@@ -47,16 +47,17 @@ struct NetworkInfoWidgetView: View {
                     infoRow("globe", "Public IP", wifi.publicIP ?? "—")
 
                     if family == .systemMedium {
-                        HStack(spacing: 16) {
+                        HStack(spacing: 12) {
                             if let rssi = wifi.rssi {
-                                infoRow("antenna.radiowaves.left.and.right", "Signal", "\(rssi) dBm")
+                                compactStat("antenna.radiowaves.left.and.right", "Signal", "\(rssi) dBm")
                             }
                             if let ch = wifi.channel {
-                                infoRow("number", "Channel", ch)
+                                compactStat("number", "Channel", ch)
                             }
                             if let rate = wifi.txRate {
-                                infoRow("arrow.up.arrow.down", "Speed", "\(rate) Mbps")
+                                compactStat("arrow.up.arrow.down", "Speed", "\(rate) Mbps")
                             }
+                            Spacer()
                         }
                     }
                 }
@@ -68,6 +69,19 @@ struct NetworkInfoWidgetView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func compactStat(_ icon: String, _ label: String, _ value: String) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 8))
+                .foregroundStyle(.secondary)
+            Text(label)
+                .font(.system(size: 8))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+        }
     }
 
     private func infoRow(_ icon: String, _ label: String, _ value: String) -> some View {

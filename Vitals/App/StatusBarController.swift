@@ -160,14 +160,10 @@ final class StatusBarController {
         guard let button = statusItem.button else { return }
         let buttonFrame = button.window?.convertToScreen(button.frame) ?? .zero
 
-        // Cap height to available screen space (menu bar to dock)
+        // Always use full available height — panel is transparent so empty space is invisible
         let screen = NSScreen.main ?? NSScreen.screens.first!
-        let maxHeight = buttonFrame.minY - screen.visibleFrame.origin.y - 16
-
-        panel.contentView?.invalidateIntrinsicContentSize()
-        let contentSize = panel.contentView?.fittingSize ?? NSSize(width: 290, height: 500)
-        let panelWidth = contentSize.width
-        let panelHeight = min(contentSize.height, maxHeight)
+        let panelWidth: CGFloat = 290
+        let panelHeight = buttonFrame.minY - screen.visibleFrame.origin.y - 16
 
         let x = buttonFrame.midX - panelWidth / 2
         let y = buttonFrame.minY - 8 - panelHeight

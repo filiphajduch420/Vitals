@@ -4,7 +4,7 @@ A lightweight macOS menu bar app that monitors your system in real time with a b
 
 Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 
-**Current version: 2.0** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
+**Current version: 2.1** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 > **Note:** This app is not signed with an Apple Developer certificate. When you first open it, macOS will show a warning saying it "cannot verify the app is free of malware." To open it, go to **System Settings > Privacy & Security** and click **"Open Anyway"** next to the Vitals message. I'm a student and can't afford the $99/year Apple Developer Program fee, but the app is fully open source — you can review every line of code and build it yourself.
 
