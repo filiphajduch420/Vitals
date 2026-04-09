@@ -59,74 +59,60 @@ final class StatusBarController {
             attachment.append(NSAttributedString(string: "  ", attributes: attrs))
         }
 
-        // CPU Usage
-        if appState.barCPUUsage {
-            addIcon("cpu.fill")
-            addText("\(Int(m.cpu.totalUsage * 100))%")
+        for item in appState.menuBarOrder {
+            guard appState.isMenuBarItemEnabled(item) else { continue }
+            switch item {
+            case .cpuUsage:
+                addIcon("cpu.fill")
+                addText("\(Int(m.cpu.totalUsage * 100))%")
+            case .cpuTemp:
+                guard let temp = th.cpuTemperature else { continue }
+                addIcon("thermometer.medium")
+                addText("\(Int(temp))°")
+            case .fanRPM:
+                guard let rpm = th.fanRPM else { continue }
+                addIcon("fan.fill")
+                addText(rpm > 0 ? "\(rpm)" : "Off")
+            case .gpu:
+                guard let util = m.gpu.utilization else { continue }
+                addIcon("display")
+                addText("\(Int(util * 100))%")
+            case .power:
+                guard let watts = th.systemPower else { continue }
+                addIcon("bolt.fill")
+                addText(String(format: "%.0fW", watts))
+            case .memory:
+                addIcon("memorychip.fill")
+                addText(Formatters.formatBytes(m.memory.used))
+            case .networkDown:
+                addIcon("arrow.down")
+                addText(Formatters.formatBytesPerSec(m.network.downloadSpeed))
+            case .networkUp:
+                addIcon("arrow.up")
+                addText(Formatters.formatBytesPerSec(m.network.uploadSpeed))
+            case .battery:
+                guard let bat = m.battery else { continue }
+                addIcon(bat.isCharging ? "battery.100percent.bolt" : "battery.75percent")
+                addText("\(bat.percentage)%")
+            case .batteryTime:
+                guard let bat = m.battery else { continue }
+                addIcon("clock")
+                if let time = bat.timeRemaining, time > 0 {
+                    addText(Formatters.formatDuration(time))
+                } else if bat.isPluggedIn {
+                    addText("\u{221E}")
+                } else {
+                    continue
+                }
+            case .disk:
+                addIcon("internaldrive.fill")
+                addText("\(Int(m.disk.usageRatio * 100))%")
+            case .ip:
+                guard let ip = m.wifi.localIP else { continue }
+                addIcon("network")
+                addText(ip)
+            }
             addSpacer()
-        }
-
-        // CPU Temperature
-        if appState.barCPUTemp, let temp = th.cpuTemperature {
-            addIcon("thermometer.medium")
-            addText("\(Int(temp))°")
-            addSpacer()
-        }
-
-        // Fan RPM
-        if appState.barFanRPM, let rpm = th.fanRPM {
-            addIcon("fan.fill")
-            addText(rpm > 0 ? "\(rpm)" : "Off")
-            addSpacer()
-        }
-
-        // GPU Temperature
-        if appState.barGPUTemp, let gpu = th.gpuTemperature {
-            addIcon("rectangle.and.text.magnifyingglass")
-            addText("\(Int(gpu))°")
-            addSpacer()
-        }
-
-        // System Power
-        if appState.barPower, let watts = th.systemPower {
-            addIcon("bolt.fill")
-            addText(String(format: "%.0fW", watts))
-            addSpacer()
-        }
-
-        // Memory
-        if appState.barMemory {
-            addIcon("memorychip.fill")
-            addText(Formatters.formatBytes(m.memory.used))
-            addSpacer()
-        }
-
-        // Network Down
-        if appState.barNetworkDown {
-            addIcon("arrow.down")
-            addText(Formatters.formatBytesPerSec(m.network.downloadSpeed))
-            addSpacer()
-        }
-
-        // Network Up
-        if appState.barNetworkUp {
-            addIcon("arrow.up")
-            addText(Formatters.formatBytesPerSec(m.network.uploadSpeed))
-            addSpacer()
-        }
-
-        // Battery
-        if appState.barBattery, let bat = m.battery {
-            let icon = bat.isCharging ? "battery.100percent.bolt" : "battery.75percent"
-            addIcon(icon)
-            addText("\(bat.percentage)%")
-            addSpacer()
-        }
-
-        // Disk
-        if appState.barDisk {
-            addIcon("internaldrive.fill")
-            addText("\(Int(m.disk.usageRatio * 100))%")
         }
 
         button.attributedTitle = attachment

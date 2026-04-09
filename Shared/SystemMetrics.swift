@@ -61,10 +61,17 @@ struct BatteryMetrics: Codable, Sendable {
     let isPluggedIn: Bool
     let timeRemaining: TimeInterval?
     let cycleCount: Int?
+    let maxCapacity: Int?       // mAh current max
+    let designCapacity: Int?    // mAh original design
+
+    var healthPercent: Int? {
+        guard let max = maxCapacity, let design = designCapacity, design > 0 else { return nil }
+        return Int(Double(max) / Double(design) * 100)
+    }
 
     static let empty = BatteryMetrics(
         percentage: 0, isCharging: false, isPluggedIn: false,
-        timeRemaining: nil, cycleCount: nil
+        timeRemaining: nil, cycleCount: nil, maxCapacity: nil, designCapacity: nil
     )
 }
 
@@ -83,6 +90,22 @@ struct DiskMetrics: Codable, Sendable {
     }
 
     static let empty = DiskMetrics(totalSpace: 0, usedSpace: 0, freeSpace: 0, readSpeed: 0, writeSpeed: 0)
+}
+
+// MARK: - GPU Metrics
+
+struct GPUMetrics: Codable, Sendable {
+    let utilization: Double?    // 0.0-1.0
+    let vramUsed: UInt64?       // bytes
+    let vramTotal: UInt64?      // bytes
+    let temperature: Double?    // from thermal
+
+    var vramUsageRatio: Double? {
+        guard let used = vramUsed, let total = vramTotal, total > 0 else { return nil }
+        return Double(used) / Double(total)
+    }
+
+    static let empty = GPUMetrics(utilization: nil, vramUsed: nil, vramTotal: nil, temperature: nil)
 }
 
 // MARK: - Thermal Metrics
@@ -134,6 +157,8 @@ struct WiFiMetrics: Codable, Sendable {
     let noise: Int?             // dBm
     let txRate: Int?            // Mbps
     let channel: String?
+    let localIP: String?
+    let publicIP: String?
 
     var signalQuality: Double {
         guard let rssi else { return 0 }
@@ -141,7 +166,7 @@ struct WiFiMetrics: Codable, Sendable {
         return min(max(Double(rssi + 100) / 70.0, 0), 1)
     }
 
-    static let empty = WiFiMetrics(ssid: nil, rssi: nil, noise: nil, txRate: nil, channel: nil)
+    static let empty = WiFiMetrics(ssid: nil, rssi: nil, noise: nil, txRate: nil, channel: nil, localIP: nil, publicIP: nil)
 }
 
 // MARK: - Aggregated System Metrics
@@ -155,8 +180,9 @@ struct SystemMetrics: Codable, Sendable {
     var disk: DiskMetrics
     var thermal: ThermalMetrics
     var wifi: WiFiMetrics
+    var gpu: GPUMetrics
     var systemInfo: SystemInfoMetrics
-    var uptime: TimeInterval        // kept for backward compat
+    var uptime: TimeInterval
 
     static let empty = SystemMetrics(
         timestamp: .now,
@@ -167,6 +193,7 @@ struct SystemMetrics: Codable, Sendable {
         disk: .empty,
         thermal: .empty,
         wifi: .empty,
+        gpu: .empty,
         systemInfo: .empty,
         uptime: 0
     )
@@ -203,7 +230,7 @@ enum MetricType: String, CaseIterable, Codable, Sendable, Identifiable {
 // MARK: - Popover Section (for drag & drop ordering)
 
 enum PopoverSection: String, CaseIterable, Codable, Sendable, Identifiable {
-    case cpu, memory, network, battery, disk, wifi, system
+    case cpu, gpu, memory, battery, system, disk, wifi, network
 
     var id: String { rawValue }
 
@@ -211,11 +238,38 @@ enum PopoverSection: String, CaseIterable, Codable, Sendable, Identifiable {
         switch self {
         case .system:  return "System"
         case .cpu:     return "CPU"
+        case .gpu:     return "GPU"
         case .memory:  return "Memory"
         case .network: return "Network"
         case .battery: return "Battery"
         case .disk:    return "Disk"
         case .wifi:    return "WiFi"
+        }
+    }
+}
+
+// MARK: - Menu Bar Item (for ordering)
+
+enum MenuBarItem: String, CaseIterable, Codable, Sendable, Identifiable {
+    case cpuUsage, cpuTemp, fanRPM, gpu, power, memory
+    case networkDown, networkUp, battery, batteryTime, disk, ip
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .cpuUsage:    return "CPU Usage"
+        case .cpuTemp:     return "CPU Temperature"
+        case .fanRPM:      return "Fan Speed"
+        case .gpu:         return "GPU Usage"
+        case .power:       return "System Power"
+        case .memory:      return "Memory"
+        case .networkDown: return "Network Down"
+        case .networkUp:   return "Network Up"
+        case .battery:     return "Battery"
+        case .batteryTime: return "Battery Time"
+        case .disk:        return "Disk Usage"
+        case .ip:          return "Local IP"
         }
     }
 }

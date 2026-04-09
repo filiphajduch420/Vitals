@@ -45,6 +45,15 @@ struct WiFiDetailView: View {
                     if wifi.rssi != nil {
                         UsageBarView(value: wifi.signalQuality, color: signalColor, height: 4)
                     }
+
+                    VStack(spacing: 3) {
+                        if let localIP = wifi.localIP {
+                            ipRow("network", "Local IP", localIP)
+                        }
+                        if let publicIP = wifi.publicIP {
+                            ipRow("globe", "Public IP", publicIP)
+                        }
+                    }
                 }
             }
         }
@@ -55,6 +64,22 @@ struct WiFiDetailView: View {
         if q > 0.7 { return .green }
         if q > 0.4 { return .yellow }
         return .red
+    }
+
+    private func ipRow(_ icon: String, _ label: String, _ value: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .foregroundStyle(.secondary)
+                .frame(width: 12)
+            Text(label)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .fontWeight(.medium)
+                .monospacedDigit()
+        }
+        .scaledFont(10)
+        .foregroundStyle(.secondary)
     }
 
     private func iconStat(_ icon: String, _ value: String) -> some View {

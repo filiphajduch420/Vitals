@@ -27,6 +27,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: false
         PRODUCT_NAME: Vitals
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: MAIN_APP
+        APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
     dependencies:
       - target: VitalsWidgets
         embed: true
@@ -45,6 +47,7 @@ targets:
         GENERATE_INFOPLIST_FILE: false
         PRODUCT_NAME: VitalsWidgets
         SWIFT_STRICT_CONCURRENCY: targeted
+        APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
 
 schemes:
   Vitals:

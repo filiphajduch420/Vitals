@@ -31,16 +31,29 @@ final class BatteryMonitor: Sendable {
             timeRemaining = TimeInterval(minutes * 60)
         }
 
-        let cycleCount = info["BatteryHealth" as String] != nil
-            ? info[kIOPSBatteryHealthKey] as? Int
-            : nil
+        // Cycle count from IOKit
+        let cycleCount = readSmartBatteryValue("CycleCount") as? Int
+
+        // Battery health: AppleRawMaxCapacity (mAh) vs DesignCapacity (mAh)
+        let maxCapacity = readSmartBatteryValue("AppleRawMaxCapacity") as? Int
+            ?? readSmartBatteryValue("NominalChargeCapacity") as? Int
+        let designCapacity = readSmartBatteryValue("DesignCapacity") as? Int
 
         return BatteryMetrics(
             percentage: percentage,
             isCharging: isCharging,
             isPluggedIn: isPluggedIn,
             timeRemaining: timeRemaining,
-            cycleCount: cycleCount
+            cycleCount: cycleCount,
+            maxCapacity: maxCapacity,
+            designCapacity: designCapacity
         )
+    }
+
+    private func readSmartBatteryValue(_ key: String) -> Any? {
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
+        guard service != IO_OBJECT_NULL else { return nil }
+        defer { IOObjectRelease(service) }
+        return IORegistryEntryCreateCFProperty(service, key as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue()
     }
 }

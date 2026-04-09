@@ -16,23 +16,33 @@ struct BatteryDetailView: View {
                 color: batteryColor(bat),
                 history: appState.batteryHistory
             ) {
-                HStack(spacing: 12) {
-                    miniLabel("Status", bat.isCharging ? "Charging" : (bat.isPluggedIn ? "Plugged In" : "On Battery"))
-
-                    if let time = bat.timeRemaining {
-                        miniLabel(
-                            bat.isCharging ? "Full In" : "Remaining",
-                            Formatters.formatDuration(time)
-                        )
-                    }
-
-                    if let temp = appState.metrics.thermal.batteryTemperature {
-                        HStack(spacing: 3) {
-                            Image(systemName: "thermometer.medium")
-                            Text(String(format: "%.1f°C", temp))
-                                .fontWeight(.medium)
-                                .monospacedDigit()
+                VStack(spacing: 4) {
+                    HStack {
+                        miniLabel("Status", bat.isCharging ? "Charging" : (bat.isPluggedIn ? "Plugged In" : "On Battery"))
+                        Spacer()
+                        if let time = bat.timeRemaining, time > 0 {
+                            miniLabel(bat.isCharging ? "Full In" : "Remaining", Formatters.formatDuration(time))
+                        } else if bat.isPluggedIn {
+                            miniLabel("Remaining", "\u{221E}")
                         }
+                        Spacer()
+                        if let temp = appState.metrics.thermal.batteryTemperature {
+                            HStack(spacing: 3) {
+                                Image(systemName: "thermometer.medium")
+                                Text(String(format: "%.1f°C", temp))
+                                    .fontWeight(.medium)
+                                    .monospacedDigit()
+                            }
+                        }
+                    }
+                    HStack(spacing: 16) {
+                        if let health = bat.healthPercent {
+                            miniLabel("Health", "\(health)%")
+                        }
+                        if let cycles = bat.cycleCount {
+                            miniLabel("Cycles", "\(cycles)")
+                        }
+                        Spacer()
                     }
                 }
                 .scaledFont(10)

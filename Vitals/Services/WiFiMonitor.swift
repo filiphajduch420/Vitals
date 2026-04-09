@@ -6,6 +6,8 @@ final class WiFiMonitor: @unchecked Sendable {
 
     private var cachedSSID: String?
     private var ssidRefreshCount = 0
+    private var cachedPublicIP: String?
+    private var publicIPRefreshCount = 0
 
     func read() -> WiFiMetrics {
         guard let iface = CWWiFiClient.shared().interface() else {
@@ -26,8 +28,11 @@ final class WiFiMonitor: @unchecked Sendable {
             channelStr = "\(ch.channelNumber)"
         }
 
-        // SSID: try CWWiFi first, fallback to networksetup command
+        // SSID — CoreWLAN needs Location Services on macOS 14+, so try fallbacks
         var ssid = iface.ssid()
+        if ssid == nil {
+            ssid = readSSIDViaSystemConfig(interfaceName)
+        }
         if ssid == nil {
             ssidRefreshCount += 1
             if cachedSSID == nil || ssidRefreshCount >= 10 {
@@ -40,11 +45,17 @@ final class WiFiMonitor: @unchecked Sendable {
             ssidRefreshCount = 0
         }
 
-        // Determine connection: SSID available, RSSI non-zero, or interface has an IP
         let connected = ssid != nil || rssi != 0 || hasIPAddress(interfaceName)
+        guard connected else { return .empty }
 
-        guard connected else {
-            return .empty
+        // Local IP
+        let localIP = getLocalIP(interfaceName)
+
+        // Public IP — refresh every 30 reads (~60s)
+        publicIPRefreshCount += 1
+        if cachedPublicIP == nil || publicIPRefreshCount >= 30 {
+            publicIPRefreshCount = 0
+            cachedPublicIP = getPublicIP()
         }
 
         return WiFiMetrics(
@@ -52,20 +63,47 @@ final class WiFiMonitor: @unchecked Sendable {
             rssi: rssi != 0 ? rssi : nil,
             noise: noise != 0 ? noise : nil,
             txRate: txRate > 0 ? Int(txRate) : nil,
-            channel: channelStr
+            channel: channelStr,
+            localIP: localIP,
+            publicIP: cachedPublicIP
         )
     }
 
-    // MARK: - Shell fallback for SSID
+    // MARK: - IP addresses
+
+    private func getLocalIP(_ interfaceName: String) -> String? {
+        let output = shell("/usr/sbin/ipconfig", ["getifaddr", interfaceName])
+        let ip = output.trimmingCharacters(in: .whitespacesAndNewlines)
+        return ip.isEmpty ? nil : ip
+    }
+
+    private func getPublicIP() -> String? {
+        guard let url = URL(string: "https://api.ipify.org") else { return nil }
+        let sem = DispatchSemaphore(value: 0)
+        var result: String?
+        let task = URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data, let ip = String(data: data, encoding: .utf8) {
+                result = ip.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            sem.signal()
+        }
+        task.resume()
+        _ = sem.wait(timeout: .now() + 3)
+        return result
+    }
+
+    // MARK: - Shell helpers
+
+    private func readSSIDViaSystemConfig(_ interfaceName: String) -> String? {
+        guard let store = SCDynamicStoreCreate(nil, "Vitals" as CFString, nil, nil) else { return nil }
+        let key = "State:/Network/Interface/\(interfaceName)/AirPort" as CFString
+        guard let info = SCDynamicStoreCopyValue(store, key) as? [String: Any] else { return nil }
+        return info["SSID_STR"] as? String
+    }
 
     private func readSSIDViaShell(_ interfaceName: String) -> String? {
         let output = shell("/usr/sbin/networksetup", ["-getairportnetwork", interfaceName])
-
-        // "You are not associated with an AirPort network."
-        if output.contains("not associated") || output.isEmpty {
-            return nil
-        }
-        // Format: "Current Wi-Fi Network: MyNetwork"
+        if output.contains("not associated") || output.isEmpty { return nil }
         let prefix = "Current Wi-Fi Network: "
         if let range = output.range(of: prefix) {
             let name = String(output[range.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -74,15 +112,9 @@ final class WiFiMonitor: @unchecked Sendable {
         return nil
     }
 
-    // MARK: - IP address check (lightweight connectivity indicator)
-
     private func hasIPAddress(_ interfaceName: String) -> Bool {
-        let output = shell("/usr/sbin/ipconfig", ["getifaddr", interfaceName])
-        // Returns an IP like "192.168.1.42" if connected, empty otherwise
-        return !output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        getLocalIP(interfaceName) != nil
     }
-
-    // MARK: - Helpers
 
     private func shell(_ path: String, _ arguments: [String]) -> String {
         let proc = Process()
@@ -91,11 +123,7 @@ final class WiFiMonitor: @unchecked Sendable {
         let pipe = Pipe()
         proc.standardOutput = pipe
         proc.standardError = FileHandle.nullDevice
-        do {
-            try proc.run()
-        } catch {
-            return ""
-        }
+        do { try proc.run() } catch { return "" }
         proc.waitUntilExit()
         return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
     }

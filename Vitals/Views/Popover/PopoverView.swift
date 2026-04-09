@@ -50,6 +50,7 @@ struct PopoverView: View {
         switch section {
         case .system:  SystemInfoDetailView()
         case .cpu:     CPUDetailView()
+        case .gpu:     GPUDetailView()
         case .memory:  MemoryDetailView()
         case .network: NetworkDetailView()
         case .battery: BatteryDetailView()
