@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitals — macOS System Monitor</title>
+    <meta name="description" content="A lightweight macOS menu bar system monitor with native Liquid Glass UI. Free and open source.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="icon.png">
+</head>
+<body>
+
+    <nav class="nav" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo" data-tab="home">
+                <img src="icon.png" alt="" width="28" height="28" class="nav-icon" aria-hidden="true">
+                <span>Vitals</span>
+            </a>
+            <div class="nav-links" role="tablist" aria-label="Page sections">
+                <a href="#" class="nav-link" role="tab" aria-selected="true" aria-controls="tab-home" tabindex="0" data-tab="home">Home</a>
+                <a href="#" class="nav-link" role="tab" aria-selected="false" aria-controls="tab-versions" tabindex="-1" data-tab="versions">Versions</a>
+                <a href="#" class="nav-link" role="tab" aria-selected="false" aria-controls="tab-about" tabindex="-1" data-tab="about">About</a>
+                <a href="https://github.com/filiphajduch420/Vitals" class="nav-github" target="_blank" rel="noopener" aria-label="View on GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home -->
+    <div id="tab-home" class="tab-content active" role="tabpanel">
+        <section class="hero">
+            <div class="hero-text">
+                <p class="hero-badge reveal">Free & Open Source</p>
+                <h1 class="hero-title reveal">System monitoring,<br><span class="hero-accent">beautifully crafted.</span></h1>
+                <p class="hero-subtitle reveal">A lightweight macOS menu bar app that monitors your system in real time with a native Liquid Glass interface. Built with SwiftUI for macOS 26 Tahoe.</p>
+                <div class="hero-actions reveal">
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/latest" class="btn btn-primary" target="_blank" rel="noopener">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download for macOS
+                    </a>
+                    <a href="https://github.com/filiphajduch420/Vitals" class="btn btn-ghost" target="_blank" rel="noopener">View on GitHub</a>
+                </div>
+                <p class="hero-note reveal">Requires macOS 26 Tahoe. Not notarized &mdash; see <a href="#" data-tab="about">About</a> for details.</p>
+            </div>
+            <div class="hero-visual reveal">
+                <img src="screenshot.png" alt="Vitals app showing CPU, memory, network, and battery stats in a Liquid Glass popover" width="618" height="1424" class="hero-screenshot" decoding="async">
+            </div>
+        </section>
+
+        <section class="features">
+            <h2 class="section-heading reveal">Everything you need to know about your Mac.</h2>
+            <div class="feature-columns">
+                <dl class="feature-list">
+                    <div class="feature reveal">
+                        <dt>CPU</dt>
+                        <dd>Usage breakdown, core count, temperature, fan RPM, and power draw.</dd>
+                    </div>
+                    <div class="feature reveal">
+                        <dt>GPU</dt>
+                        <dd>Utilization, VRAM usage, and temperature for Apple Silicon, Intel, and AMD.</dd>
+                    </div>
+                    <div class="feature reveal">
+                        <dt>Memory</dt>
+                        <dd>Used and total with active, wired, and compressed breakdown.</dd>
+                    </div>
+                </dl>
+                <dl class="feature-list">
+                    <div class="feature reveal">
+                        <dt>Battery</dt>
+                        <dd>Health percentage, cycle count, charging status, time remaining, temperature.</dd>
+                    </div>
+                    <div class="feature reveal">
+                        <dt>Network</dt>
+                        <dd>Live upload and download speeds with sparkline graphs and total transfer stats.</dd>
+                    </div>
+                    <div class="feature reveal">
+                        <dt>WiFi</dt>
+                        <dd>Signal strength, link speed, channel, local IP, and public IP address.</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="highlights">
+            <div class="highlight reveal">
+                <h3>Native Liquid Glass</h3>
+                <p>Built with Apple's <code>NSGlassEffectView</code> API for an authentic, system-native glass effect. Three style variants with adjustable opacity &mdash; not an approximation, the real thing.</p>
+            </div>
+            <div class="highlight reveal">
+                <h3>Desktop Widgets</h3>
+                <p>Four WidgetKit widgets: System Health, Storage, Battery, and Network Info. Glanceable system stats right on your desktop.</p>
+            </div>
+            <div class="highlight reveal">
+                <h3>Fully Customizable</h3>
+                <p>Reorder sections and menu bar items, toggle visibility, adjust text size from 80% to 130%, choose glass style and opacity. Make it yours.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Versions -->
+    <div id="tab-versions" class="tab-content" role="tabpanel">
+        <section class="versions">
+            <h2 class="section-heading reveal">Version History</h2>
+
+            <div class="version-list">
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.1</h3>
+                        <span class="version-badge">Latest</span>
+                        <time class="version-date" datetime="2026-04-09">April 9, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Added</h4>
+                        <ul>
+                            <li>Glass Reset to Default button in Appearance settings</li>
+                            <li>Project website for GitHub Pages</li>
+                        </ul>
+                        <h4>Changed</h4>
+                        <ul>
+                            <li>Section toggles now update the popover in real-time</li>
+                            <li>Full-height transparent panel for instant section appearance</li>
+                            <li>Network widget compact layout &mdash; units no longer cut off</li>
+                            <li>Battery Health and Cycles left-aligned</li>
+                        </ul>
+                        <h4>Fixed</h4>
+                        <ul>
+                            <li>Widget data sharing &mdash; App Group ID resolves correctly</li>
+                            <li>Widget version mismatch causing widgets to disappear from gallery</li>
+                            <li>WiFi SSID fallback via SystemConfiguration</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.1" class="version-download" target="_blank" rel="noopener">Download v2.1 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.0</h3>
+                        <time class="version-date" datetime="2026-04-09">April 9, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Added</h4>
+                        <ul>
+                            <li>GPU monitoring &mdash; utilization, VRAM usage, temperature (Apple Silicon + Intel/AMD)</li>
+                            <li>Battery health &mdash; capacity degradation %, cycle count</li>
+                            <li>Local &amp; Public IP &mdash; displayed in WiFi section and menu bar</li>
+                            <li>Battery time remaining in menu bar with &infin; when plugged in</li>
+                            <li>Desktop widgets &mdash; System Health, Storage, Battery, Network Info</li>
+                            <li>Menu bar item reordering with arrow buttons</li>
+                            <li>Reset to Default buttons for sections and menu bar</li>
+                        </ul>
+                        <h4>Changed</h4>
+                        <ul>
+                            <li>Native <code>NSGlassEffectView</code> for authentic Liquid Glass look</li>
+                            <li>3 glass style variants (A, B, C) with segmented picker</li>
+                            <li>Adaptive light/dark mode opacity overlay</li>
+                            <li>Proper font scaling via environment instead of scaleEffect</li>
+                        </ul>
+                        <h4>Fixed</h4>
+                        <ul>
+                            <li>WiFi detection with IP-based fallback</li>
+                            <li>Widget data sharing with correct App Group format</li>
+                            <li>Layout recursion crash from glass effect</li>
+                            <li>Battery health reading (was showing 1%)</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.0" class="version-download" target="_blank" rel="noopener">Download v2.0 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 1.1</h3>
+                        <time class="version-date" datetime="2026-04-08">April 8, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Added</h4>
+                        <ul>
+                            <li>App icon (heartbeat/pulse design)</li>
+                            <li>ScrollView for small screens</li>
+                            <li>DMG installer with Applications shortcut</li>
+                            <li>Author and GitHub link in Settings</li>
+                        </ul>
+                        <h4>Changed</h4>
+                        <ul>
+                            <li>System section defaults to bottom</li>
+                            <li>Light mode opacity fix</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v1.1" class="version-download" target="_blank" rel="noopener">Download v1.1 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 1.0</h3>
+                        <time class="version-date" datetime="2026-04-08">April 8, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Initial Release</h4>
+                        <ul>
+                            <li>Menu bar system monitor with CPU, Memory, Network, Battery, Disk, WiFi, System</li>
+                            <li>Liquid Glass UI with customizable opacity and style variants</li>
+                            <li>Customizable section order and visibility</li>
+                            <li>Adjustable text size</li>
+                            <li>Settings with General and Appearance tabs</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v1.0" class="version-download" target="_blank" rel="noopener">Download v1.0 &rarr;</a>
+                </article>
+            </div>
+        </section>
+    </div>
+
+    <!-- About -->
+    <div id="tab-about" class="tab-content" role="tabpanel">
+        <section class="about">
+            <h2 class="section-heading reveal">About Vitals</h2>
+
+            <div class="about-content">
+                <div class="about-section reveal">
+                    <h3>The App</h3>
+                    <p>Vitals is a lightweight system monitor that lives in your macOS menu bar. It gives you instant access to CPU, GPU, memory, battery, network, disk, and WiFi stats &mdash; all wrapped in a native Liquid Glass interface that feels right at home on macOS 26 Tahoe.</p>
+                    <p>Unlike other system monitors, Vitals uses Apple's private <code>NSGlassEffectView</code> API to render authentic glass effects, not approximations. The result is a UI that looks and feels like a built-in part of macOS.</p>
+                    <p>The app also includes four desktop widgets for at-a-glance system info, full menu bar customization, and a settings panel with appearance controls including glass style variants, opacity, and text scaling.</p>
+                </div>
+
+                <div class="about-section reveal">
+                    <h3>The Developer</h3>
+                    <p>Hi, I'm <strong>Filip Hajduch</strong>, a student from the Czech Republic. I built Vitals because I wanted a system monitor that actually looks good on modern macOS &mdash; one that embraces the new Liquid Glass design language instead of looking like it's from 2015.</p>
+                    <p>I'm passionate about clean UI design and believe that even utility apps deserve to look beautiful. This project is my way of learning Swift, SwiftUI, and macOS development while building something genuinely useful.</p>
+                    <p>Vitals is completely free and open source. You can review every line of code on GitHub. If you find it useful, consider giving it a star!</p>
+                    <a href="https://github.com/filiphajduch420" class="about-link" target="_blank" rel="noopener">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                        @filiphajduch420
+                    </a>
+                </div>
+
+                <div class="about-section about-notice reveal">
+                    <h3>Why the security warning?</h3>
+                    <p>When you first open Vitals, macOS will warn you that it &ldquo;cannot verify the developer.&rdquo; This is because the app is not notarized with Apple &mdash; I'm a student and can't afford the $99/year Apple Developer Program fee.</p>
+                    <p>To open the app, go to <strong>System Settings &rarr; Privacy &amp; Security</strong> and click <strong>&ldquo;Open Anyway&rdquo;</strong> next to the Vitals message. You only need to do this once.</p>
+                    <p>The entire source code is available on GitHub. You can audit it, build it yourself, and verify that it does exactly what it says &mdash; nothing more.</p>
+                </div>
+
+                <div class="about-section reveal">
+                    <h3>Tech Stack</h3>
+                    <div class="tech-list">
+                        <span class="tech-tag">SwiftUI</span>
+                        <span class="tech-tag">AppKit</span>
+                        <span class="tech-tag">CoreWLAN</span>
+                        <span class="tech-tag">IOKit</span>
+                        <span class="tech-tag">Swift Charts</span>
+                        <span class="tech-tag">WidgetKit</span>
+                        <span class="tech-tag">XcodeGen</span>
+                    </div>
+                    <p class="tech-license">Released under the MIT License.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <p>&copy; 2026 Filip Hajduch. MIT License.</p>
+            <nav class="footer-links" aria-label="Footer">
+                <a href="https://github.com/filiphajduch420/Vitals" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/filiphajduch420/Vitals/releases" target="_blank" rel="noopener">Releases</a>
+                <a href="https://github.com/filiphajduch420/Vitals/issues" target="_blank" rel="noopener">Issues</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
