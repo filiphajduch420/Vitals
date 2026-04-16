@@ -3,6 +3,7 @@ import SwiftUI
 struct PopoverView: View {
 
     @Environment(AppState.self) private var appState
+    @Environment(\.colorScheme) private var colorScheme
 
     /// Computed in body scope so @Observable tracks all section visibility properties
     private var visibleSections: [PopoverSection] {
@@ -27,6 +28,7 @@ struct PopoverView: View {
                                 .frame(width: 28, height: 28)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Open Activity Monitor")
 
                         SettingsLink {
                             Image(systemName: "gearshape.fill")
@@ -34,6 +36,7 @@ struct PopoverView: View {
                                 .frame(width: 28, height: 28)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Open Settings")
                     }
                 }
 
@@ -46,6 +49,12 @@ struct PopoverView: View {
         .environment(\.glassOpacity, appState.glassOpacity)
         .environment(\.glassVariantEnv, appState.glassVariant)
         .environment(\.textScale, appState.textScale)
+        .environment(\.textColorBrightness, appState.textColorBrightness)
+        .environment(\.textColorIsDark, colorScheme == .light)
+        .foregroundStyle({
+            let b = colorScheme == .dark ? appState.textColorBrightness : 1 - appState.textColorBrightness
+            return Color(white: b)
+        }())
         .frame(width: 280)
     }
 

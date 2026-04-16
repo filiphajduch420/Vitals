@@ -48,8 +48,16 @@ enum DataSharingManager {
             logger.error("readMetrics: no container URL")
             return nil
         }
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            logger.warning("readMetrics: file does not exist at \(url.path)")
+            return nil
+        }
         do {
             let data = try Data(contentsOf: url)
+            guard !data.isEmpty else {
+                logger.warning("readMetrics: file is empty")
+                return nil
+            }
             logger.info("readMetrics: read \(data.count) bytes")
             let metrics = try JSONDecoder().decode(SystemMetrics.self, from: data)
             logger.info("readMetrics: decoded OK, cpu=\(metrics.cpu.totalUsage)")

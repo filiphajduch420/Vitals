@@ -12,18 +12,20 @@ struct WiFiDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "wifi")
                         .scaledFont(13, weight: .semibold)
-                        .foregroundStyle(wifi.ssid != nil ? .blue : .secondary)
+                        .foregroundStyle(wifi.ssid != nil ? AnyShapeStyle(.blue) : AnyShapeStyle(Color.gray))
                     Text("WiFi")
                         .scaledFont(12, weight: .semibold, design: .rounded)
                     Spacer()
                     if let ssid = wifi.ssid {
                         Text(ssid)
                             .scaledFont(11, weight: .medium)
-                            .foregroundStyle(.secondary)
+                            .adaptiveSecondary()
+                            .lineLimit(1)
+                            .truncationMode(.middle)
                     } else {
                         Text("Not Connected")
                             .scaledFont(11)
-                            .foregroundStyle(.secondary)
+                            .adaptiveSecondary()
                     }
                 }
 
@@ -40,7 +42,7 @@ struct WiFiDetailView: View {
                         }
                     }
                     .scaledFont(10)
-                    .foregroundStyle(.secondary)
+                    .adaptiveSecondary()
 
                     if wifi.rssi != nil {
                         UsageBarView(value: wifi.signalQuality, color: signalColor, height: 4)
@@ -69,17 +71,19 @@ struct WiFiDetailView: View {
     private func ipRow(_ icon: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
                 .frame(width: 12)
             Text(label)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
             Spacer()
             Text(value)
                 .fontWeight(.medium)
                 .monospacedDigit()
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
         .scaledFont(10)
-        .foregroundStyle(.secondary)
+        .adaptiveSecondary()
     }
 
     private func iconStat(_ icon: String, _ value: String) -> some View {

@@ -20,7 +20,7 @@ struct GaugeView: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .animation(.easeInOut(duration: 0.3), value: value)
+                .animation(.easeInOut(duration: 0.15), value: value)
 
             // Center label
             Text("\(Int(value * 100))")

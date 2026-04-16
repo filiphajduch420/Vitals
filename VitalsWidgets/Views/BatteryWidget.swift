@@ -30,6 +30,7 @@ struct BatteryWidgetView: View {
                         .foregroundStyle(batteryColor)
                     Text("Battery")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.primary)
                     Spacer()
                     Text("\(bat.percentage)%")
                         .font(.system(size: 16, weight: .bold, design: .monospaced))
@@ -87,6 +88,7 @@ struct BatteryWidgetView: View {
         if bat.isCharging { return .green }
         if bat.percentage < 10 { return .red }
         if bat.percentage < 20 { return .orange }
+        if bat.percentage < 50 { return .yellow }
         return .green
     }
 
@@ -97,6 +99,7 @@ struct BatteryWidgetView: View {
                 .foregroundStyle(.secondary)
             Text(value)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .foregroundStyle(.primary)
         }
     }
 }

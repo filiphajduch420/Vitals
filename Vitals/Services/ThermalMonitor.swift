@@ -178,20 +178,4 @@ final class ThermalMonitor: @unchecked Sendable {
         return Double(raw) / 100.0
     }
 
-    // MARK: - SSD temp
-
-    private func readSSDTemp() -> Double? {
-        var iter: io_iterator_t = 0
-        guard IOServiceGetMatchingServices(kIOMainPortDefault,
-            IOServiceMatching("AppleEmbeddedNVMeTemperatureSensor"), &iter) == KERN_SUCCESS else { return nil }
-        defer { IOObjectRelease(iter) }
-        let entry = IOIteratorNext(iter)
-        guard entry != 0 else { return nil }
-        defer { IOObjectRelease(entry) }
-        var props: Unmanaged<CFMutableDictionary>?
-        guard IORegistryEntryCreateCFProperties(entry, &props, kCFAllocatorDefault, 0) == KERN_SUCCESS,
-              let dict = props?.takeRetainedValue() as? [String: Any],
-              let raw = dict["Temperature"] as? Int else { return nil }
-        return Double(raw) / 100.0
-    }
 }

@@ -18,7 +18,7 @@ struct SystemInfoDetailView: View {
                     Spacer()
                     Text(info.modelName)
                         .scaledFont(11, weight: .medium)
-                        .foregroundStyle(.secondary)
+                        .adaptiveSecondary()
                 }
 
                 VStack(spacing: 4) {
@@ -34,16 +34,18 @@ struct SystemInfoDetailView: View {
     private func infoRow(_ icon: String, _ label: String, _ value: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
                 .frame(width: 12, alignment: .center)
             Text(label)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
             Spacer()
             Text(value)
                 .fontWeight(.medium)
                 .monospacedDigit()
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
         .scaledFont(10)
-        .foregroundStyle(.secondary)
+        .adaptiveSecondary()
     }
 }

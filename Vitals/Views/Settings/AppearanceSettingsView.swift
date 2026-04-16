@@ -62,6 +62,7 @@ struct AppearanceSettingsView: View {
                 Button {
                     appState.glassVariant = .default
                     appState.glassOpacity = 0.2
+                    appState.textColorBrightness = 0.8
                 } label: {
                     Label("Reset to Default", systemImage: "arrow.counterclockwise")
                 }
@@ -96,6 +97,34 @@ struct AppearanceSettingsView: View {
                 }
             } header: {
                 Label("Text Size", systemImage: "textformat.size")
+            }
+
+            // MARK: - Text Color
+            Section {
+                LabeledContent("Contrast") {
+                    HStack(spacing: 8) {
+                        Image(systemName: "circle.dotted")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tertiary)
+                        Slider(
+                            value: Binding(
+                                get: { appState.textColorBrightness },
+                                set: { appState.textColorBrightness = $0 }
+                            ),
+                            in: 0.4...1,
+                            step: 0.05
+                        )
+                        Image(systemName: "circle.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.primary)
+                        Text("\(Int(appState.textColorBrightness * 100))%")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 36, alignment: .trailing)
+                    }
+                }
+            } header: {
+                Label("Text Contrast", systemImage: "paintbrush.pointed.fill")
             }
 
             // MARK: - Section Order

@@ -14,6 +14,7 @@ final class AppState {
     var diskHistory = MetricHistory(capacity: 60)
 
     private let monitor = SystemMonitor()
+    let powerMonitor = PowerStateMonitor()
     private var lastWidgetRefresh: Date = .distantPast
 
     // MARK: - Menu Bar Items (granular toggles)
@@ -70,11 +71,28 @@ final class AppState {
         didSet { save(textScale, forKey: "textScale") }
     }
 
+    /// Text color brightness: 0.0 (black) – 1.0 (white)
+    var textColorBrightness: Double = 0.8 {
+        didSet { save(textColorBrightness, forKey: "textColorBrightness") }
+    }
+
     var updateInterval: Double = 2.0 {
         didSet {
             save(updateInterval, forKey: "updateInterval")
             startMonitoring()
         }
+    }
+
+    var batterySavingInterval: Double = 5.0 {
+        didSet {
+            save(batterySavingInterval, forKey: "batterySavingInterval")
+            if powerMonitor.isOnBattery { startMonitoring() }
+        }
+    }
+
+    /// The actual polling interval based on power state.
+    var effectiveInterval: Double {
+        powerMonitor.isOnBattery ? batterySavingInterval : updateInterval
     }
 
     // MARK: - Toggle helpers for popover icons
@@ -131,6 +149,7 @@ final class AppState {
             d.set(false, forKey: "sectionNetwork")
             d.set(0.2, forKey: "glassOpacity")
             d.set(2.0, forKey: "updateInterval")
+            d.set(5.0, forKey: "batterySavingInterval")
         }
 
         barCPUUsage = d.bool(forKey: "barCPUUsage")
@@ -158,13 +177,25 @@ final class AppState {
         glassVariant = GlassVariant(rawValue: d.integer(forKey: "glassVariant")) ?? .default
         let savedScale = d.double(forKey: "textScale")
         textScale = savedScale > 0 ? savedScale : 1.0
+        let savedBrightness = d.object(forKey: "textColorBrightness") != nil ? d.double(forKey: "textColorBrightness") : 0.8
+        textColorBrightness = savedBrightness
         let interval = d.double(forKey: "updateInterval")
         updateInterval = interval > 0 ? interval : 2.0
+        let savedBSI = d.double(forKey: "batterySavingInterval")
+        batterySavingInterval = savedBSI > 0 ? savedBSI : 5.0
+
+        // React to power state changes (AC ↔ Battery)
+        powerMonitor.onStateChanged = { [weak self] in
+            self?.startMonitoring()
+        }
     }
 
     func startMonitoring() {
+        let interval = effectiveInterval
+        let saving = powerMonitor.isOnBattery
         Task {
-            await monitor.startPolling(interval: updateInterval) { [weak self] newMetrics in
+            await monitor.setBatterySaving(saving)
+            await monitor.startPolling(interval: interval) { [weak self] newMetrics in
                 self?.updateMetrics(newMetrics)
             }
         }
@@ -184,7 +215,7 @@ final class AppState {
         memoryHistory.append(newMetrics.memory.usageRatio, at: now)
         diskHistory.append(newMetrics.disk.usageRatio, at: now)
 
-        let maxSpeed: Double = 100 * 1024 * 1024
+        let maxSpeed: Double = 10 * 1024 * 1024 * 1024
         networkDownHistory.append(
             min(Double(newMetrics.network.downloadSpeed) / maxSpeed, 1.0), at: now
         )

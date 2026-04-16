@@ -14,6 +14,14 @@ private struct TextScaleKey: EnvironmentKey {
     static let defaultValue: Double = 1.0
 }
 
+private struct TextColorBrightnessKey: EnvironmentKey {
+    static let defaultValue: Double = 1.0
+}
+
+private struct TextColorIsDarkKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
 extension EnvironmentValues {
     var glassOpacity: Double {
         get { self[GlassOpacityKey.self] }
@@ -26,6 +34,32 @@ extension EnvironmentValues {
     var textScale: Double {
         get { self[TextScaleKey.self] }
         set { self[TextScaleKey.self] = newValue }
+    }
+    var textColorBrightness: Double {
+        get { self[TextColorBrightnessKey.self] }
+        set { self[TextColorBrightnessKey.self] = newValue }
+    }
+    var textColorIsDark: Bool {
+        get { self[TextColorIsDarkKey.self] }
+        set { self[TextColorIsDarkKey.self] = newValue }
+    }
+}
+
+// MARK: - Adaptive text color helpers
+
+extension View {
+    /// Secondary text color that respects the text color brightness setting.
+    func adaptiveSecondary() -> some View {
+        modifier(AdaptiveSecondaryModifier())
+    }
+}
+
+private struct AdaptiveSecondaryModifier: ViewModifier {
+    @Environment(\.textColorBrightness) private var brightness
+    @Environment(\.textColorIsDark) private var isDark
+    func body(content: Content) -> some View {
+        let b = isDark ? 1 - brightness : brightness
+        content.foregroundStyle(Color(white: b).opacity(0.93))
     }
 }
 

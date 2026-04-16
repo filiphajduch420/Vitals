@@ -7,11 +7,17 @@ final class StatusBarController {
     private var panel: NSPanel!
     private var appState: AppState
     private var globalMonitor: Any?
+    private var labelUpdateTask: Task<Void, Never>?
 
     init(appState: AppState) {
         self.appState = appState
         setupStatusItem()
         setupPanel()
+    }
+
+    nonisolated deinit {
+        // Note: cleanup happens via hidePanel() during normal usage.
+        // globalMonitor and labelUpdateTask are cleaned up by ARC.
     }
 
     // MARK: - Status Item
@@ -24,8 +30,17 @@ final class StatusBarController {
             updateLabel()
         }
 
-        Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.updateLabel() }
+        startLabelUpdates()
+    }
+
+    private func startLabelUpdates() {
+        labelUpdateTask?.cancel()
+        labelUpdateTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                self.updateLabel()
+                try? await Task.sleep(for: .seconds(self.appState.effectiveInterval))
+            }
         }
     }
 
@@ -161,7 +176,7 @@ final class StatusBarController {
         let buttonFrame = button.window?.convertToScreen(button.frame) ?? .zero
 
         // Always use full available height — panel is transparent so empty space is invisible
-        let screen = NSScreen.main ?? NSScreen.screens.first!
+        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         let panelWidth: CGFloat = 290
         let panelHeight = buttonFrame.minY - screen.visibleFrame.origin.y - 16
 
