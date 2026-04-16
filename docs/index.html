@@ -106,8 +106,41 @@
             <div class="version-list">
                 <article class="version-entry reveal">
                     <div class="version-meta">
-                        <h3 class="version-name">Version 2.1</h3>
+                        <h3 class="version-name">Version 2.2</h3>
                         <span class="version-badge">Latest</span>
+                        <time class="version-date" datetime="2026-04-16">April 16, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Added</h4>
+                        <ul>
+                            <li>Battery saving mode &mdash; polls less frequently when running on battery</li>
+                            <li>Configurable battery saving interval in General settings</li>
+                            <li>Text contrast slider in Appearance settings</li>
+                            <li>Network Info widget added to widget gallery</li>
+                            <li>Smooth number animations for metric values</li>
+                        </ul>
+                        <h4>Changed</h4>
+                        <ul>
+                            <li>Smarter polling &mdash; expensive sensors read less often on battery</li>
+                            <li>Menu bar updates synced with polling interval</li>
+                            <li>Widget refresh interval reduced from 5 to 2 minutes</li>
+                            <li>Improved light mode contrast for accent colors and text</li>
+                            <li>Faster, snappier animations throughout the UI</li>
+                        </ul>
+                        <h4>Fixed</h4>
+                        <ul>
+                            <li>Crash on displays without a screen detected</li>
+                            <li>Battery widget showing stale data</li>
+                            <li>Battery widget text invisible in light mode</li>
+                            <li>Long WiFi names and IP addresses now truncate properly</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.2" class="version-download" target="_blank" rel="noopener">Download v2.2 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.1</h3>
                         <time class="version-date" datetime="2026-04-09">April 9, 2026</time>
                     </div>
                     <div class="version-body">
@@ -225,9 +258,8 @@
 
                 <div class="about-section reveal">
                     <h3>The Developer</h3>
-                    <p>Hi, I'm <strong>Filip Hajduch</strong>, a student from the Czech Republic. I built Vitals because I wanted a system monitor that actually looks good on modern macOS &mdash; one that embraces the new Liquid Glass design language instead of looking like it's from 2015.</p>
-                    <p>I'm passionate about clean UI design and believe that even utility apps deserve to look beautiful. This project is my way of learning Swift, SwiftUI, and macOS development while building something genuinely useful.</p>
-                    <p>Vitals is completely free and open source. You can review every line of code on GitHub. If you find it useful, consider giving it a star!</p>
+                    <p>Hi, I'm <strong>Filip Hajduch</strong>, a Cybersecurity student from Zl&iacute;n, Czech Republic. I wanted a simple, clean system monitor for macOS that looks almost native &mdash; like it was made by Apple. I couldn't find one, so I built it myself.</p>
+                    <p>Vitals is still actively developed. I keep adding features and ideas as they come &mdash; if something interesting can make it better, it goes in. The project is completely free and open source. You can review every line of code on GitHub. If you find it useful, consider giving it a star!</p>
                     <a href="https://github.com/filiphajduch420" class="about-link" target="_blank" rel="noopener">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                         @filiphajduch420

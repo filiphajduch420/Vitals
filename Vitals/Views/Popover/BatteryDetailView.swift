@@ -46,7 +46,7 @@ struct BatteryDetailView: View {
                     }
                 }
                 .scaledFont(10)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
             }
         }
     }
@@ -74,7 +74,7 @@ struct BatteryDetailView: View {
     private func miniLabel(_ label: String, _ value: String) -> some View {
         VStack(spacing: 2) {
             Text(label)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
             Text(value)
                 .fontWeight(.medium)
                 .monospacedDigit()

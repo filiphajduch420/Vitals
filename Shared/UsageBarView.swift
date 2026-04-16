@@ -20,7 +20,7 @@ struct UsageBarView: View {
                         )
                     )
                     .frame(width: geo.size.width * CGFloat(min(value, 1.0)))
-                    .animation(.spring(duration: 0.4), value: value)
+                    .animation(.easeInOut(duration: 0.2), value: value)
             }
         }
         .frame(height: height)

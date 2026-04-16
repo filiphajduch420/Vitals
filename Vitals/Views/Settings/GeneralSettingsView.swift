@@ -5,6 +5,7 @@ struct GeneralSettingsView: View {
 
     @Environment(AppState.self) private var appState
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var showBatteryInfo = false
 
     var body: some View {
         Form {
@@ -34,6 +35,47 @@ struct GeneralSettingsView: View {
                     Text("10s").tag(10.0)
                 }
                 .pickerStyle(.segmented)
+            }
+
+            Section {
+                Picker("Refresh every", selection: Binding(
+                    get: { appState.batterySavingInterval },
+                    set: { appState.batterySavingInterval = $0 }
+                )) {
+                    Text("3s").tag(3.0)
+                    Text("5s").tag(5.0)
+                    Text("10s").tag(10.0)
+                    Text("15s").tag(15.0)
+                }
+                .pickerStyle(.segmented)
+            } header: {
+                HStack(spacing: 4) {
+                    Text("Battery Saving Interval")
+                    Button {
+                        showBatteryInfo.toggle()
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.borderless)
+                    .popover(isPresented: $showBatteryInfo, arrowEdge: .bottom) {
+                        Text("When your Mac is unplugged and running on battery, Vitals automatically switches to this longer refresh interval and reduces expensive sensor reads to save energy.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(12)
+                            .frame(width: 240)
+                    }
+                }
+            } footer: {
+                HStack(spacing: 4) {
+                    Image(systemName: appState.powerMonitor.isOnBattery ? "battery.50percent" : "powerplug.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(appState.powerMonitor.isOnBattery ? .orange : .green)
+                    Text(appState.powerMonitor.isOnBattery ? "On battery — saving mode active" : "On AC power — full performance")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Section {

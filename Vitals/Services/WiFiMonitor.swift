@@ -5,11 +5,11 @@ import SystemConfiguration
 final class WiFiMonitor: @unchecked Sendable {
 
     private var cachedSSID: String?
-    private var ssidRefreshCount = 0
+    private var lastSSIDRefresh: Date = .distantPast
     private var cachedPublicIP: String?
-    private var publicIPRefreshCount = 0
+    private var lastPublicIPRefresh: Date = .distantPast
 
-    func read() -> WiFiMetrics {
+    func read() async -> WiFiMetrics {
         guard let iface = CWWiFiClient.shared().interface() else {
             return .empty
         }
@@ -34,15 +34,14 @@ final class WiFiMonitor: @unchecked Sendable {
             ssid = readSSIDViaSystemConfig(interfaceName)
         }
         if ssid == nil {
-            ssidRefreshCount += 1
-            if cachedSSID == nil || ssidRefreshCount >= 10 {
-                ssidRefreshCount = 0
+            if cachedSSID == nil || Date().timeIntervalSince(lastSSIDRefresh) >= 60 {
+                lastSSIDRefresh = Date()
                 cachedSSID = readSSIDViaShell(interfaceName)
             }
             ssid = cachedSSID
         } else {
             cachedSSID = ssid
-            ssidRefreshCount = 0
+            lastSSIDRefresh = Date()
         }
 
         let connected = ssid != nil || rssi != 0 || hasIPAddress(interfaceName)
@@ -51,11 +50,10 @@ final class WiFiMonitor: @unchecked Sendable {
         // Local IP
         let localIP = getLocalIP(interfaceName)
 
-        // Public IP — refresh every 30 reads (~60s)
-        publicIPRefreshCount += 1
-        if cachedPublicIP == nil || publicIPRefreshCount >= 30 {
-            publicIPRefreshCount = 0
-            cachedPublicIP = getPublicIP()
+        // Public IP — refresh every 5 minutes
+        if cachedPublicIP == nil || Date().timeIntervalSince(lastPublicIPRefresh) >= 300 {
+            lastPublicIPRefresh = Date()
+            cachedPublicIP = await getPublicIP()
         }
 
         return WiFiMetrics(
@@ -77,19 +75,17 @@ final class WiFiMonitor: @unchecked Sendable {
         return ip.isEmpty ? nil : ip
     }
 
-    private func getPublicIP() -> String? {
+    private func getPublicIP() async -> String? {
         guard let url = URL(string: "https://api.ipify.org") else { return nil }
-        let sem = DispatchSemaphore(value: 0)
-        var result: String?
-        let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data, let ip = String(data: data, encoding: .utf8) {
-                result = ip.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            sem.signal()
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 3
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let ip = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return (ip?.isEmpty == false) ? ip : nil
+        } catch {
+            return nil
         }
-        task.resume()
-        _ = sem.wait(timeout: .now() + 3)
-        return result
     }
 
     // MARK: - Shell helpers

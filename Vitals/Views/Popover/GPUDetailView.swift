@@ -39,7 +39,7 @@ struct GPUDetailView: View {
                     }
                 }
                 .scaledFont(10)
-                .foregroundStyle(.secondary)
+                .adaptiveSecondary()
             }
         }
     }

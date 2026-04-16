@@ -73,7 +73,7 @@ body {
     radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.025) 1px, transparent 0),
     var(--bg);
   background-size: 40px 40px, 100% 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* --- Base --- */
@@ -112,6 +112,7 @@ strong { font-weight: 600; }
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
+  max-width: calc(100vw - 24px);
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(40px) saturate(1.8);
   -webkit-backdrop-filter: blur(40px) saturate(1.8);
@@ -766,21 +767,31 @@ strong { font-weight: 600; }
 /* ============================================
    Responsive
    ============================================ */
+
+/* --- Tablet (640px+) --- */
 @media (min-width: 640px) {
   .feature-columns {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-md);
   }
   .highlights {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
   }
 }
 
+/* --- Tablet (768px+) --- */
 @media (min-width: 768px) {
+  .hero {
+    min-height: 100dvh;
+  }
+}
+
+/* --- Desktop (860px+) — hero splits to two columns --- */
+@media (min-width: 860px) {
   .hero {
     grid-template-columns: 1fr auto;
     padding: 0 var(--space-lg);
-    gap: var(--space-3xl);
+    gap: var(--space-2xl);
     text-align: left;
   }
   .hero-text {
@@ -799,16 +810,75 @@ strong { font-weight: 600; }
   }
 }
 
+/* --- Wide desktop (1024px+) --- */
+@media (min-width: 1024px) {
+  .hero {
+    gap: var(--space-3xl);
+  }
+  .highlights {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --- Mobile (< 640px) --- */
 @media (max-width: 639px) {
+  /* Nav → bottom bar, centered */
+  .nav {
+    position: fixed;
+    top: auto;
+    bottom: 12px;
+    left: 0;
+    right: 0;
+    transform: none;
+    width: fit-content;
+    margin: 0 auto;
+    z-index: 9999;
+  }
   .nav-inner {
-    padding: 0 4px 0 16px;
+    padding: 0 6px;
+    height: 52px;
+    justify-content: center;
+    gap: 4px;
   }
   .nav-logo {
-    margin-right: var(--space-md);
+    display: none;
   }
+  .nav-link {
+    padding: 8px 18px;
+    font-size: 0.8125rem;
+    min-height: 40px;
+  }
+  .nav-github {
+    width: 40px;
+    height: 40px;
+  }
+
   .hero {
-    padding: 100px var(--space-base) var(--space-2xl);
+    padding: 32px var(--space-base) var(--space-2xl);
+    min-height: auto;
   }
+  .hero::before {
+    width: 350px;
+    height: 350px;
+    top: -5%;
+    left: -25%;
+  }
+  .hero::after {
+    width: 280px;
+    height: 280px;
+    right: -20%;
+  }
+  .hero-screenshot {
+    max-height: 50vh;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn {
+    justify-content: center;
+  }
+
   .features,
   .highlights {
     padding-left: var(--space-base);
@@ -818,6 +888,7 @@ strong { font-weight: 600; }
   .about {
     padding-left: var(--space-base);
     padding-right: var(--space-base);
+    padding-top: 48px;
   }
   .version-meta {
     flex-direction: column;
@@ -825,6 +896,9 @@ strong { font-weight: 600; }
   }
   .version-date {
     margin-left: 0;
+  }
+  .footer {
+    padding-bottom: 80px;
   }
   .footer-inner {
     flex-direction: column;
