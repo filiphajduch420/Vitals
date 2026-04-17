@@ -112,7 +112,7 @@ final class ThermalMonitor: @unchecked Sendable {
             }
         }
 
-        guard r1 == KERN_SUCCESS else {
+        guard r1 == KERN_SUCCESS && outSz >= MemoryLayout<SMCParam>.size else {
             return nil
         }
         guard output.keyInfo.dataSize > 0 else { return nil }
@@ -134,9 +134,9 @@ final class ThermalMonitor: @unchecked Sendable {
             }
         }
 
-        guard r2 == KERN_SUCCESS else { return nil }
+        guard r2 == KERN_SUCCESS && outSz >= MemoryLayout<SMCParam>.size else { return nil }
 
-        if output.keyInfo.dataSize == 4 {
+        if output2.keyInfo.dataSize >= 4 {
             let b = withUnsafeBytes(of: output2.bytes) { Array($0.prefix(4)) }
             var f: Float = 0
             withUnsafeMutableBytes(of: &f) { buf in

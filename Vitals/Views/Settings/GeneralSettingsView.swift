@@ -125,11 +125,13 @@ struct GeneralSettingsView: View {
                 LabeledContent("App", value: "Vitals")
                 LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                 LabeledContent("Author", value: "Filip Hajduch")
-                HStack {
-                    Text("GitHub")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Link("filiphajduch420/Vitals", destination: URL(string: "https://github.com/filiphajduch420/Vitals")!)
+                if let repoURL = URL(string: "https://github.com/filiphajduch420/Vitals") {
+                    HStack {
+                        Text("GitHub")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Link("filiphajduch420/Vitals", destination: repoURL)
+                    }
                 }
             }
         }

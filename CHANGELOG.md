@@ -2,6 +2,56 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.3] - 2026-04-17
+
+### Added
+- **System Overview widget** — new medium + large widget showing Battery and Storage as side-by-side donut rings with network info below (SSID, signal bars, IPs on large)
+- **Widget tinted mode** — `widgetAccentable` support for macOS Tahoe tinted rendering
+- **Shared widget components** — `DonutRing`, `WidgetGradientBackground`, `WidgetHeader`, `WidgetStatRow`, `BigPercent` extracted into `VitalsWidgets/Components/WidgetComponents.swift` for reuse
+
+### Changed
+- **Complete widget redesign** — all widgets now use donut rings with angular gradients, dark gradient backgrounds with status-color glow, and SF Pro Rounded typography
+- **Storage widget** — large donut ring showing used %, free space below
+- **Battery widget** — donut ring with lightning bolt overlay when charging; Status/Health/Cycles/Time rows on medium
+- **Network Info widget** — donut ring showing signal quality % mapped from RSSI, IP and signal details below
+
+### Fixed
+- **Widget data sharing** — restored App Group container (regression from v2.2 refactor had broken widget data reads)
+- **WiFi empty SSID** — handle empty string (not just nil); shows "Wi-Fi" label when macOS hides the network name
+
+### Security
+- **Memory leaks** — `IOObjectRelease` via `defer` in DiskMonitor and GPUMonitor prevents leaked IOKit handles on error paths
+- **PowerStateMonitor** — retain/release fix on context pointer eliminates use-after-free risk
+- **ThermalMonitor** — SMC bounds check prevents buffer overread when reading thermal sensor data
+- **Public IP lookup** — HTTP status check and IPv4/IPv6 format validation before trusting response
+- **WiFi SSID lookup** — `autoreleasepool` wrap around `SCDynamicStore` calls to prevent long-lived CF leaks
+- **File permissions** — `metrics.json` written with `0o600` (owner-only read/write)
+- **App Transport Security** — `NSAppTransportSecurity` disallows arbitrary loads (HTTPS only)
+- **Safe URL unwrap** — `GeneralSettingsView` GitHub link guarded against invalid URL
+- **Binary size** — release-config symbol stripping reduces attack surface
+
+## [2.2] - 2026-04-16
+
+### Added
+- **Battery saving mode** — polls less frequently when running on battery
+- **Configurable battery saving interval** in General settings
+- **Text contrast slider** in Appearance settings
+- **Network Info widget** added to widget gallery
+- **Smooth number animations** for metric values
+
+### Changed
+- **Smarter polling** — expensive sensors read less often on battery
+- **Menu bar updates** synced with polling interval
+- **Widget refresh interval** reduced from 5 to 2 minutes
+- **Improved light mode contrast** for accent colors and text
+- **Faster, snappier animations** throughout the UI
+
+### Fixed
+- Crash on displays without a screen detected
+- Battery widget showing stale data
+- Battery widget text invisible in light mode
+- Long WiFi names and IP addresses now truncate properly
+
 ## [2.1] - 2026-04-09
 
 ### Added

@@ -7,7 +7,9 @@ struct BatteryWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: VitalsTimelineProvider()) { entry in
             BatteryWidgetView(entry: entry)
-                .containerBackground(.clear, for: .widget)
+                .containerBackground(for: .widget) {
+                    WidgetGradientBackground(accentColor: batteryAccentColor(for: entry.metrics.battery))
+                }
         }
         .configurationDisplayName("Battery")
         .description("Battery level, health, and cycle count.")
@@ -20,86 +22,164 @@ struct BatteryWidgetView: View {
     @Environment(\.widgetFamily) var family
 
     private var bat: BatteryMetrics? { entry.metrics.battery }
+    private var ratio: Double { Double(bat?.percentage ?? 0) / 100.0 }
+    private var color: Color { batteryAccentColor(for: bat) }
 
     var body: some View {
-        if let bat {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: bat.isCharging ? "battery.100percent.bolt" : "battery.75percent")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(batteryColor)
-                    Text("Battery")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    Text("\(bat.percentage)%")
-                        .font(.system(size: 16, weight: .bold, design: .monospaced))
-                        .foregroundStyle(batteryColor)
-                }
+        if bat != nil {
+            switch family {
+            case .systemMedium: mediumBody
+            default: smallBody
+            }
+        } else {
+            noBatteryBody
+        }
+    }
 
-                // Usage bar
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(batteryColor.opacity(0.15))
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(batteryColor)
-                            .frame(width: geo.size.width * Double(bat.percentage) / 100.0)
-                    }
-                }
-                .frame(height: 8)
+    private var smallBody: some View {
+        VStack(spacing: 6) {
+            WidgetHeader(icon: headerIcon, title: "BATTERY")
 
-                HStack(spacing: family == .systemSmall ? 8 : 16) {
-                    statLabel("Status", bat.isCharging ? "Charging" : (bat.isPluggedIn ? "Plugged" : "Battery"))
+            ZStack {
+                DonutRing(ratio: ratio, color: color)
+                    .widgetAccentable()
 
-                    if let health = bat.healthPercent {
-                        statLabel("Health", "\(health)%")
-                    }
-
-                    if let cycles = bat.cycleCount {
-                        statLabel("Cycles", "\(cycles)")
-                    }
-
-                    if family == .systemMedium {
-                        if let time = bat.timeRemaining, time > 0 {
-                            statLabel(bat.isCharging ? "Full In" : "Left", Formatters.formatDuration(time))
-                        } else if bat.isPluggedIn {
-                            statLabel("Left", "\u{221E}")
+                VStack(spacing: -2) {
+                    HStack(alignment: .firstTextBaseline, spacing: 2) {
+                        BigPercent(percent: bat?.percentage ?? 0)
+                        if bat?.isCharging == true {
+                            Image(systemName: "bolt.fill")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(color)
                         }
                     }
+                    Text(statusLabel)
+                        .font(.system(size: 9, weight: .medium, design: .rounded))
+                        .foregroundStyle(.tertiary)
+                        .textCase(.uppercase)
+                        .kerning(0.6)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            VStack(spacing: 8) {
-                Image(systemName: "battery.slash")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.secondary)
-                Text("No Battery")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
+            .frame(maxHeight: .infinity)
 
-    private var batteryColor: Color {
-        guard let bat else { return .secondary }
-        if bat.isCharging { return .green }
-        if bat.percentage < 10 { return .red }
-        if bat.percentage < 20 { return .orange }
-        if bat.percentage < 50 { return .yellow }
-        return .green
-    }
-
-    private func statLabel(_ label: String, _ value: String) -> some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(.system(size: 9))
+            Text(smallBottomLine)
+                .font(.system(size: 10, weight: .medium, design: .rounded))
+                .monospacedDigit()
                 .foregroundStyle(.secondary)
-            Text(value)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundStyle(.primary)
+                .lineLimit(1)
         }
     }
+
+    private var mediumBody: some View {
+        HStack(spacing: 18) {
+            ZStack {
+                DonutRing(ratio: ratio, color: color)
+                    .widgetAccentable()
+                BigPercent(percent: bat?.percentage ?? 0, numberSize: 28, symbolSize: 14)
+            }
+            .frame(width: 88, height: 88)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 5) {
+                    Image(systemName: headerIcon)
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Battery")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    if bat?.isCharging == true {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(color)
+                    }
+                }
+                .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    WidgetStatRow(label: "Status", value: statusLabel, valueColor: color)
+
+                    if let health = bat?.healthPercent {
+                        WidgetStatRow(label: "Health", value: "\(health)%")
+                    }
+
+                    if let cycles = bat?.cycleCount {
+                        WidgetStatRow(label: "Cycles", value: "\(cycles)")
+                    }
+
+                    if let timeValue = timeRemainingValue {
+                        WidgetStatRow(label: timeLabel, value: timeValue)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var noBatteryBody: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "battery.slash")
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text("No Battery")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Derived values
+
+    private var headerIcon: String {
+        guard let bat else { return "battery.slash" }
+        if bat.isCharging { return "battery.100percent.bolt" }
+        if bat.percentage >= 75 { return "battery.100percent" }
+        if bat.percentage >= 50 { return "battery.75percent" }
+        if bat.percentage >= 25 { return "battery.50percent" }
+        return "battery.25percent"
+    }
+
+    private var statusLabel: String {
+        guard let bat else { return "Battery" }
+        if bat.isCharging { return "Charging" }
+        if bat.isPluggedIn { return "Plugged" }
+        return "Battery"
+    }
+
+    private var timeLabel: String {
+        (bat?.isCharging == true) ? "Full In" : "Left"
+    }
+
+    private var timeRemainingValue: String? {
+        guard let bat else { return nil }
+        if let time = bat.timeRemaining, time > 0 {
+            return Formatters.formatDuration(time)
+        }
+        if bat.isPluggedIn {
+            return "\u{221E}"
+        }
+        return nil
+    }
+
+    private var smallBottomLine: String {
+        guard let bat else { return "" }
+        if let timeValue = timeRemainingValue {
+            return timeValue
+        }
+        if let health = bat.healthPercent {
+            return "Health \(health)%"
+        }
+        if let cycles = bat.cycleCount {
+            return "\(cycles) cycles"
+        }
+        return "\(bat.percentage)%"
+    }
+}
+
+// MARK: - Battery color
+
+private func batteryAccentColor(for bat: BatteryMetrics?) -> Color {
+    guard let bat else { return .gray }
+    if bat.isCharging { return .green }
+    if bat.percentage < 10 { return .red }
+    if bat.percentage < 20 { return .orange }
+    if bat.percentage < 50 { return .yellow }
+    return .green
 }
