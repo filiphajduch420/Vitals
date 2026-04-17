@@ -62,17 +62,6 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 - Safe URL unwrap in General settings (no force-unwrap crash on GitHub link)
 - Release-config symbol stripping reduces binary size and attack surface
 
-## What's New in v2.0
-
-- GPU monitoring (utilization, VRAM, temperature)
-- Battery health tracking (capacity degradation, cycle count)
-- Local & Public IP addresses
-- Desktop widgets (System Health, Storage, Battery, Network Info)
-- Menu bar item reordering with arrow buttons
-- Native `NSGlassEffectView` for authentic Liquid Glass
-- Light/dark mode adaptive glass opacity
-- Scrollable popover for smaller screens
-
 See [CHANGELOG.md](CHANGELOG.md) for the complete list of changes.
 
 ## Requirements
