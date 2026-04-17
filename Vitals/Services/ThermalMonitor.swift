@@ -136,7 +136,7 @@ final class ThermalMonitor: @unchecked Sendable {
 
         guard r2 == KERN_SUCCESS && outSz >= MemoryLayout<SMCParam>.size else { return nil }
 
-        if output2.keyInfo.dataSize >= 4 {
+        if output.keyInfo.dataSize >= 4 {
             let b = withUnsafeBytes(of: output2.bytes) { Array($0.prefix(4)) }
             var f: Float = 0
             withUnsafeMutableBytes(of: &f) { buf in

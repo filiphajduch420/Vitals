@@ -2,6 +2,11 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.3.1] - 2026-04-17
+
+### Fixed
+- **SMC read regression** — `output2` vs `output` typo in `ThermalMonitor.smcRead` caused all SMC sensor reads to return nil, hiding CPU temperature, fan RPM, GPU temperature, and system power in the popover
+
 ## [2.3] - 2026-04-17
 
 ### Added
