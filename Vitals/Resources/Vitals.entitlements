@@ -8,5 +8,7 @@
     <array>
         <string>$(APP_GROUP_ID)</string>
     </array>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <false/>
 </dict>
 </plist>

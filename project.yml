@@ -14,6 +14,11 @@ settings:
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: ULM9RV4JUS
     APP_GROUP_ID: $(DEVELOPMENT_TEAM).com.filiphajduch.vitals
+  configs:
+    Release:
+      COPY_PHASE_STRIP: YES
+      STRIP_INSTALLED_PRODUCT: YES
+      DEAD_CODE_STRIPPING: YES
 
 targets:
   Vitals:
@@ -59,3 +64,12 @@ schemes:
     run:
       config: Debug
       executable: Vitals
+  VitalsWidgets:
+    build:
+      targets:
+        Vitals: all
+        VitalsWidgets: all
+    run:
+      config: Debug
+      executable: Vitals
+      askForAppToLaunch: true

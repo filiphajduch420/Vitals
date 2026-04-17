@@ -13,6 +13,7 @@ final class GPUMonitor: @unchecked Sendable {
         var iterator: io_iterator_t = 0
 
         if IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator) == KERN_SUCCESS {
+            defer { IOObjectRelease(iterator) }
             var service = IOIteratorNext(iterator)
             while service != IO_OBJECT_NULL {
                 // GPU utilization
@@ -38,7 +39,6 @@ final class GPUMonitor: @unchecked Sendable {
                 IOObjectRelease(service)
                 service = IOIteratorNext(iterator)
             }
-            IOObjectRelease(iterator)
         }
 
         // Fallback: try Intel/AMD GPU
@@ -46,6 +46,7 @@ final class GPUMonitor: @unchecked Sendable {
             if let accelMatching = IOServiceMatching("IOAccelerator") {
                 var accelIterator: io_iterator_t = 0
                 if IOServiceGetMatchingServices(kIOMainPortDefault, accelMatching, &accelIterator) == KERN_SUCCESS {
+                    defer { IOObjectRelease(accelIterator) }
                     var service = IOIteratorNext(accelIterator)
                     while service != IO_OBJECT_NULL {
                         if let props = getProperties(service) {
@@ -64,7 +65,6 @@ final class GPUMonitor: @unchecked Sendable {
                         IOObjectRelease(service)
                         service = IOIteratorNext(accelIterator)
                     }
-                    IOObjectRelease(accelIterator)
                 }
             }
         }

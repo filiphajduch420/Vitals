@@ -38,6 +38,7 @@ enum DataSharingManager {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
             let data = try JSONEncoder().encode(metrics)
             try data.write(to: url, options: .atomic)
+            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
         } catch {
             logger.error("writeMetrics failed: \(error.localizedDescription)")
         }

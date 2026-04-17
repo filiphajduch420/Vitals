@@ -33,7 +33,7 @@
             <div class="hero-text">
                 <p class="hero-badge reveal">Free & Open Source</p>
                 <h1 class="hero-title reveal">System monitoring,<br><span class="hero-accent">beautifully crafted.</span></h1>
-                <p class="hero-subtitle reveal">A lightweight macOS menu bar app that monitors your system in real time with a native Liquid Glass interface. Built with SwiftUI for macOS 26 Tahoe.</p>
+                <p class="hero-subtitle reveal">A lightweight macOS menu bar app that monitors your system in real time with a native Liquid Glass interface. Built with SwiftUI for macOS 26 Tahoe. Now with beautiful Liquid Glass-style widgets featuring donut rings and live status colors.</p>
                 <div class="hero-actions reveal">
                     <a href="https://github.com/filiphajduch420/Vitals/releases/latest" class="btn btn-primary" target="_blank" rel="noopener">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -89,7 +89,7 @@
             </div>
             <div class="highlight reveal">
                 <h3>Desktop Widgets</h3>
-                <p>Four WidgetKit widgets: System Health, Storage, Battery, and Network Info. Glanceable system stats right on your desktop.</p>
+                <p>Beautiful Liquid Glass-style widgets with donut rings, angular gradients, status-color glow, and SF Pro Rounded typography &mdash; a full redesign for a macOS Tahoe-native feel. Five WidgetKit widgets: System Health, Storage, Battery, Network Info, and the new System Overview (Battery + Storage as donut rings side-by-side with network info, in medium and large sizes).</p>
             </div>
             <div class="highlight reveal">
                 <h3>Fully Customizable</h3>
@@ -106,8 +106,46 @@
             <div class="version-list">
                 <article class="version-entry reveal">
                     <div class="version-meta">
-                        <h3 class="version-name">Version 2.2</h3>
+                        <h3 class="version-name">Version 2.3</h3>
                         <span class="version-badge">Latest</span>
+                        <time class="version-date" datetime="2026-04-17">April 17, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Added</h4>
+                        <ul>
+                            <li>System Overview widget &mdash; Battery and Storage as donut rings side-by-side with network info, in medium and large sizes</li>
+                            <li>Full widget redesign with donut rings, angular gradients, and status-color glow</li>
+                            <li>SF Pro Rounded typography for a macOS Tahoe-native feel</li>
+                        </ul>
+                        <h4>Changed</h4>
+                        <ul>
+                            <li>All widgets refreshed with the new Liquid Glass-style design language</li>
+                            <li>Live status colors across every widget for at-a-glance health reads</li>
+                        </ul>
+                        <h4>Fixed</h4>
+                        <ul>
+                            <li>Widget data sharing &mdash; restored App Group container (regression from v2.2 had broken widget data reads)</li>
+                            <li>WiFi empty SSID handling &mdash; shows &ldquo;Wi-Fi&rdquo; fallback when macOS hides the network name</li>
+                        </ul>
+                        <h4>Security</h4>
+                        <ul>
+                            <li>Memory leak fixes (<code>IOObjectRelease</code> via <code>defer</code>) in DiskMonitor and GPUMonitor</li>
+                            <li>PowerStateMonitor retain/release fix on context pointer (use-after-free prevention)</li>
+                            <li>ThermalMonitor SMC bounds check prevents buffer overread on sensor reads</li>
+                            <li>Public IP lookup: HTTP status check and IPv4/IPv6 format validation</li>
+                            <li>WiFi SSID lookup wrapped in <code>autoreleasepool</code> to prevent long-lived CF leaks</li>
+                            <li><code>metrics.json</code> written with owner-only permissions (<code>0o600</code>)</li>
+                            <li><code>NSAppTransportSecurity</code> disallows arbitrary loads (HTTPS only)</li>
+                            <li>Safe URL unwrap in General settings (no force-unwrap crash)</li>
+                            <li>Release-config symbol stripping reduces binary size and attack surface</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.3" class="version-download" target="_blank" rel="noopener">Download v2.3 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.2</h3>
                         <time class="version-date" datetime="2026-04-16">April 16, 2026</time>
                     </div>
                     <div class="version-body">

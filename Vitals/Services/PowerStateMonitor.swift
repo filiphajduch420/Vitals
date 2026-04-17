@@ -17,6 +17,7 @@ final class PowerStateMonitor {
     }
 
     deinit {
+        Unmanaged.passUnretained(self).release()
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .defaultMode)
         }
@@ -36,7 +37,7 @@ final class PowerStateMonitor {
             }
         }
 
-        let context = Unmanaged.passUnretained(self).toOpaque()
+        let context = Unmanaged.passRetained(self).toOpaque()
         if let source = IOPSNotificationCreateRunLoopSource(callback, context)?.takeRetainedValue() {
             runLoopSource = source
             CFRunLoopAddSource(CFRunLoopGetMain(), source, .defaultMode)

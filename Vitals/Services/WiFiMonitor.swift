@@ -30,10 +30,10 @@ final class WiFiMonitor: @unchecked Sendable {
 
         // SSID — CoreWLAN needs Location Services on macOS 14+, so try fallbacks
         var ssid = iface.ssid()
-        if ssid == nil {
+        if ssid?.isEmpty != false {
             ssid = readSSIDViaSystemConfig(interfaceName)
         }
-        if ssid == nil {
+        if ssid?.isEmpty != false {
             if cachedSSID == nil || Date().timeIntervalSince(lastSSIDRefresh) >= 60 {
                 lastSSIDRefresh = Date()
                 cachedSSID = readSSIDViaShell(interfaceName)
@@ -80,9 +80,18 @@ final class WiFiMonitor: @unchecked Sendable {
         var request = URLRequest(url: url)
         request.timeoutInterval = 3
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let ip = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-            return (ip?.isEmpty == false) ? ip : nil
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else { return nil }
+            guard let ip = String(data: data, encoding: .utf8)?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+                  !ip.isEmpty else { return nil }
+            // Validate IP format: IPv4 or IPv6
+            let ipv4Pattern = #"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"#
+            let isIPv4 = ip.range(of: ipv4Pattern, options: .regularExpression) != nil
+            let isIPv6 = ip.contains(":")
+            guard isIPv4 || isIPv6 else { return nil }
+            return ip
         } catch {
             return nil
         }
@@ -91,10 +100,12 @@ final class WiFiMonitor: @unchecked Sendable {
     // MARK: - Shell helpers
 
     private func readSSIDViaSystemConfig(_ interfaceName: String) -> String? {
-        guard let store = SCDynamicStoreCreate(nil, "Vitals" as CFString, nil, nil) else { return nil }
-        let key = "State:/Network/Interface/\(interfaceName)/AirPort" as CFString
-        guard let info = SCDynamicStoreCopyValue(store, key) as? [String: Any] else { return nil }
-        return info["SSID_STR"] as? String
+        return autoreleasepool {
+            guard let store = SCDynamicStoreCreate(nil, "Vitals" as CFString, nil, nil) else { return nil }
+            let key = "State:/Network/Interface/\(interfaceName)/AirPort" as CFString
+            guard let info = SCDynamicStoreCopyValue(store, key) as? [String: Any] else { return nil }
+            return info["SSID_STR"] as? String
+        }
     }
 
     private func readSSIDViaShell(_ interfaceName: String) -> String? {

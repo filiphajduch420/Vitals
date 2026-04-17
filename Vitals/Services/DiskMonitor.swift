@@ -63,6 +63,8 @@ final class DiskMonitor: @unchecked Sendable {
 
         var entry = IOIteratorNext(iterator)
         while entry != 0 {
+            let current = entry
+            defer { IOObjectRelease(current) }
             var props: Unmanaged<CFMutableDictionary>?
             if IORegistryEntryCreateCFProperties(entry, &props, kCFAllocatorDefault, 0) == KERN_SUCCESS,
                let dict = props?.takeRetainedValue() as? [String: Any],
@@ -70,7 +72,6 @@ final class DiskMonitor: @unchecked Sendable {
                 totalRead += stats["Bytes (Read)"] as? UInt64 ?? 0
                 totalWrite += stats["Bytes (Write)"] as? UInt64 ?? 0
             }
-            IOObjectRelease(entry)
             entry = IOIteratorNext(iterator)
         }
         return (totalRead, totalWrite)

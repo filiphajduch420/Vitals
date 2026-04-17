@@ -8,5 +8,6 @@ struct VitalsWidgetBundle: WidgetBundle {
         StorageWidget()
         BatteryWidget()
         NetworkInfoWidget()
+        OverviewWidget()
     }
 }
