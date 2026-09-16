@@ -1,5 +1,6 @@
 import Foundation
 import IOKit
+import os
 
 final class DiskMonitor: @unchecked Sendable {
 
@@ -55,7 +56,10 @@ final class DiskMonitor: @unchecked Sendable {
             kIOMainPortDefault,
             IOServiceMatching("IOBlockStorageDriver"),
             &iterator
-        ) == KERN_SUCCESS else { return (0, 0) }
+        ) == KERN_SUCCESS else {
+            VitalsLog.disk.error("IOServiceGetMatchingServices(IOBlockStorageDriver) failed")
+            return (0, 0)
+        }
         defer { IOObjectRelease(iterator) }
 
         var totalRead: UInt64 = 0

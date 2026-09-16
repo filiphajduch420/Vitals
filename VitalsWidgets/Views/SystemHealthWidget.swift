@@ -23,14 +23,14 @@ struct SystemHealthWidgetView: View {
     private var status: (color: Color, label: String, icon: String) {
         // Critical
         if m.cpu.totalUsage > 0.9 { return (.red, "CPU Critical", "exclamationmark.triangle.fill") }
-        if m.memory.usageRatio > 0.95 { return (.red, "Memory Critical", "exclamationmark.triangle.fill") }
+        if m.memory.pressure == .critical { return (.red, "Memory Critical", "exclamationmark.triangle.fill") }
         if m.disk.usageRatio > 0.95 { return (.red, "Disk Full", "exclamationmark.triangle.fill") }
         if let temp = m.thermal.cpuTemperature, temp > 95 { return (.red, "Overheating", "exclamationmark.triangle.fill") }
         if let bat = m.battery, bat.percentage < 5, !bat.isPluggedIn { return (.red, "Battery Critical", "exclamationmark.triangle.fill") }
 
         // Warning
         if m.cpu.totalUsage > 0.7 { return (.yellow, "CPU High", "exclamationmark.circle.fill") }
-        if m.memory.usageRatio > 0.85 { return (.yellow, "Memory High", "exclamationmark.circle.fill") }
+        if m.memory.pressure == .warning { return (.yellow, "Memory High", "exclamationmark.circle.fill") }
         if m.disk.usageRatio > 0.85 { return (.yellow, "Disk Low", "exclamationmark.circle.fill") }
         if let temp = m.thermal.cpuTemperature, temp > 80 { return (.yellow, "Warm", "exclamationmark.circle.fill") }
         if let bat = m.battery, bat.percentage < 15, !bat.isPluggedIn { return (.yellow, "Battery Low", "exclamationmark.circle.fill") }

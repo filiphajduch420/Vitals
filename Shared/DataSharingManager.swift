@@ -2,8 +2,6 @@ import Foundation
 import WidgetKit
 import os
 
-private let logger = Logger(subsystem: "com.filiphajduch.vitals", category: "DataSharing")
-
 enum DataSharingManager {
 
     private static let groupID: String = {
@@ -27,44 +25,70 @@ enum DataSharingManager {
         return url
     }
 
+    /// Serializes metrics writes off the main thread. The single actor instance
+    /// guarantees there are never two overlapping writes, and running the encode
+    /// plus disk I/O here keeps them off the @MainActor UI thread.
+    private actor FileWriter {
+        static let shared = FileWriter()
+        private var directoryEnsured = false
+
+        func write(_ metrics: SystemMetrics, to url: URL) {
+            do {
+                // Ensure directory exists — only needs to happen once.
+                if !directoryEnsured {
+                    let dir = url.deletingLastPathComponent()
+                    try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                    directoryEnsured = true
+                }
+                let data = try JSONEncoder().encode(metrics)
+                // Create the file up-front with 0600 so it is never world-readable,
+                // not even for the brief window a write-then-chmod would leave open.
+                // Atomic writes preserve the mode of an existing destination file.
+                if !FileManager.default.fileExists(atPath: url.path) {
+                    FileManager.default.createFile(
+                        atPath: url.path,
+                        contents: nil,
+                        attributes: [.posixPermissions: 0o600]
+                    )
+                }
+                try data.write(to: url, options: .atomic)
+            } catch {
+                VitalsLog.sharing.error("writeMetrics failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
     static func writeMetrics(_ metrics: SystemMetrics) {
         guard let url = sharedFileURL else {
-            logger.error("writeMetrics: no container URL")
+            VitalsLog.sharing.error("writeMetrics: no container URL")
             return
         }
-        do {
-            // Ensure directory exists
-            let dir = url.deletingLastPathComponent()
-            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            let data = try JSONEncoder().encode(metrics)
-            try data.write(to: url, options: .atomic)
-            try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: url.path)
-        } catch {
-            logger.error("writeMetrics failed: \(error.localizedDescription)")
+        Task.detached(priority: .utility) {
+            await FileWriter.shared.write(metrics, to: url)
         }
     }
 
     static func readMetrics() -> SystemMetrics? {
         guard let url = sharedFileURL else {
-            logger.error("readMetrics: no container URL")
+            VitalsLog.sharing.error("readMetrics: no container URL")
             return nil
         }
         guard FileManager.default.fileExists(atPath: url.path) else {
-            logger.warning("readMetrics: file does not exist at \(url.path)")
+            VitalsLog.sharing.warning("readMetrics: file does not exist at \(url.path)")
             return nil
         }
         do {
             let data = try Data(contentsOf: url)
             guard !data.isEmpty else {
-                logger.warning("readMetrics: file is empty")
+                VitalsLog.sharing.warning("readMetrics: file is empty")
                 return nil
             }
-            logger.info("readMetrics: read \(data.count) bytes")
+            VitalsLog.sharing.debug("readMetrics: read \(data.count) bytes")
             let metrics = try JSONDecoder().decode(SystemMetrics.self, from: data)
-            logger.info("readMetrics: decoded OK, cpu=\(metrics.cpu.totalUsage)")
+            VitalsLog.sharing.debug("readMetrics: decoded OK, cpu=\(metrics.cpu.totalUsage)")
             return metrics
         } catch {
-            logger.error("readMetrics failed: \(error.localizedDescription)")
+            VitalsLog.sharing.error("readMetrics failed: \(error.localizedDescription)")
             return nil
         }
     }

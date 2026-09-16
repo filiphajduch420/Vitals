@@ -1,9 +1,14 @@
 import Foundation
 import IOKit
+import os
 
 final class ThermalMonitor: @unchecked Sendable {
 
     private let smcConnection: io_connect_t
+
+    // Battery temperature changes slowly — cache with 5-minute TTL
+    private var cachedBatteryTemp: Double?
+    private var lastBatteryTempRefresh: Date = .distantPast
 
     init() {
         let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSMCKeysEndpoint"))
@@ -11,13 +16,15 @@ final class ThermalMonitor: @unchecked Sendable {
             var conn: io_connect_t = 0
             if IOServiceOpen(service, mach_task_self_, 0, &conn) == KERN_SUCCESS {
                 smcConnection = conn
-                // SMC connected
+                VitalsLog.thermal.debug("SMC connection opened")
             } else {
                 smcConnection = 0
+                VitalsLog.thermal.error("IOServiceOpen(AppleSMCKeysEndpoint) failed — temperatures/fan unavailable")
             }
             IOObjectRelease(service)
         } else {
             smcConnection = 0
+            VitalsLog.thermal.error("AppleSMCKeysEndpoint service not found — temperatures/fan unavailable")
         }
     }
 
@@ -168,8 +175,20 @@ final class ThermalMonitor: @unchecked Sendable {
     // MARK: - Battery temp
 
     private func readBatteryTemp() -> Double? {
+        // Battery temperature changes slowly — cache with 5-minute TTL
+        if cachedBatteryTemp == nil || Date().timeIntervalSince(lastBatteryTempRefresh) >= 300 {
+            lastBatteryTempRefresh = Date()
+            cachedBatteryTemp = fetchBatteryTemp()
+        }
+        return cachedBatteryTemp
+    }
+
+    private func fetchBatteryTemp() -> Double? {
         let svc = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
-        guard svc != 0 else { return nil }
+        guard svc != 0 else {
+            VitalsLog.thermal.debug("AppleSmartBattery service not found for temperature")
+            return nil
+        }
         defer { IOObjectRelease(svc) }
         var props: Unmanaged<CFMutableDictionary>?
         guard IORegistryEntryCreateCFProperties(svc, &props, kCFAllocatorDefault, 0) == KERN_SUCCESS,

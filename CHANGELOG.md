@@ -2,6 +2,37 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.4] - 2026-09-16
+
+### Added
+- **Public IP privacy toggle** — new "Show public IP" switch in General settings; the app queries `api.ipify.org` only when you turn it on
+- **Unified logging** — every part of the app and the widget extension now logs to the macOS unified logging system under the subsystem `com.filiphajduch.vitals`, with per-area categories (`app`, `power`, `sharing`, `widgets`, and one per monitor), so failures (IOKit/SMC reads, `sysctl`, `metrics.json` writes, missing App Group container, network errors, JSON decode) explain themselves
+- **Copy log command** — button in Settings > General > About that copies a ready-to-run `log show` command to your clipboard for troubleshooting
+- **Troubleshooting / Logs** section in the README with `log show`/`log stream` examples and category filtering
+
+### Changed
+- **Local IP without forking a process** — Wi-Fi local IP is now read directly via `getifaddrs()` instead of spawning `ipconfig` every 2 seconds, cutting constant fork/exec overhead and battery drain
+- **Monitoring pauses on sleep** — polling stops when the display or system sleeps and resumes on wake, so Vitals no longer reads sensors, spawns processes, or writes to disk with the screen off
+- **Off-main-thread widget writes** — `metrics.json` is now encoded and written off the main thread on a serialized writer and throttled to roughly once every 15 seconds instead of every 2 seconds, keeping the UI smooth and letting the SSD idle
+- **Single timer** — the separate menu bar label timer was removed; the label now redraws the moment new metrics arrive, halving timer wake-ups and keeping the label in sync with the data
+- **Cached slow-changing values** — battery cycle count, capacity, and temperature (values that barely change) are cached with a short TTL instead of being read from IOKit on every tick; design capacity is read once
+- **Widget refresh budget** — the widget timeline reload policy changed from `.atEnd` to `.after(15 min)` so widgets stop burning through WidgetKit's refresh budget; the running app still drives live updates
+- **Distribution build** — `create-dmg.sh` now ad-hoc signs the app and widget with a hardened runtime, stages into private per-run temp directories, and publishes a SHA-256 checksum alongside the DMG
+- **Install instructions** — README and website now document the "Open Anyway" flow (right-click → Open no longer works on macOS 15+), the `xattr` alternative, checksum verification, and why the pre-built widgets may not show data
+- **Setup guidance** — `setup.sh` no longer references a stale App Group ID; it explains that the ID is derived automatically from your signing team
+
+### Fixed
+- **False memory alarms gone** — memory pressure now comes from the real kernel signal (`kern.memorystatus_vm_pressure_level`) instead of a RAM-usage ratio, so a healthy Mac no longer shows bogus "warning"/"critical" states in the app or the System Health widget
+- **Wi-Fi data race** — `WiFiMonitor` is now an `actor`, eliminating a real data race on its cached SSID/public-IP state when polling restarts (interval change or AC↔battery switch)
+- **Dead code removed** — unused `MenuBarLabel` and `CompactMetricView` (one of which spuriously started a second monitoring loop) were deleted; the byte formatter is now a cached instance; and the menu bar "Reset to Default" now matches a fresh install
+
+### Security
+- **Public IP lookup is opt-in and off by default** — no automatic third-party requests to `api.ipify.org`; nothing is sent unless you explicitly enable "Show public IP"
+- **`metrics.json` created private from the start** — the shared metrics file is created with `0600` permissions up front, closing the brief window where it could have been world-readable
+- **Signed, verifiable downloads** — DMG builds are ad-hoc signed with a hardened runtime and ship with a SHA-256 checksum you can verify
+- **No predictable staging paths** — the DMG build stages into private `mktemp -d` directories (0700) instead of shared `/tmp` paths, removing a local TOCTOU risk
+- **`PowerStateMonitor` retain/release fixed** — the IOKit callback context is now balanced with a paired release, correcting a leak-and-potential-use-after-free pattern
+
 ## [2.3.1] - 2026-04-17
 
 ### Fixed

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import os
 
 @MainActor
 @Observable
@@ -16,6 +17,13 @@ final class AppState {
     private let monitor = SystemMonitor()
     let powerMonitor = PowerStateMonitor()
     private var lastWidgetRefresh: Date = .distantPast
+    private var lastMetricsWrite: Date = .distantPast
+    private var sleepWakeObservers: [NSObjectProtocol] = []
+
+    /// Invoked on the main actor after each metrics update so dependent UI
+    /// (the status-bar label) can redraw in lockstep with the data instead of
+    /// running its own timer.
+    var onMetricsUpdate: (() -> Void)?
 
     // MARK: - Menu Bar Items (granular toggles)
 
@@ -95,6 +103,19 @@ final class AppState {
         powerMonitor.isOnBattery ? batterySavingInterval : updateInterval
     }
 
+    // MARK: - Privacy
+
+    /// Whether to look up the public IP via an external service (api.ipify.org).
+    /// Opt-in and disabled by default so no request leaves the machine unless asked.
+    var enablePublicIPLookup: Bool = false {
+        didSet {
+            save(enablePublicIPLookup, forKey: "enablePublicIPLookup")
+            let value = enablePublicIPLookup
+            VitalsLog.wifi.info("public IP lookup \(value ? "enabled" : "disabled", privacy: .public)")
+            Task { await monitor.setIncludePublicIP(value) }
+        }
+    }
+
     // MARK: - Toggle helpers for popover icons
 
     func isShownInMenuBar(_ metric: MetricType) -> Bool {
@@ -150,6 +171,7 @@ final class AppState {
             d.set(0.2, forKey: "glassOpacity")
             d.set(2.0, forKey: "updateInterval")
             d.set(5.0, forKey: "batterySavingInterval")
+            d.set(false, forKey: "enablePublicIPLookup")
         }
 
         barCPUUsage = d.bool(forKey: "barCPUUsage")
@@ -183,18 +205,27 @@ final class AppState {
         updateInterval = interval > 0 ? interval : 2.0
         let savedBSI = d.double(forKey: "batterySavingInterval")
         batterySavingInterval = savedBSI > 0 ? savedBSI : 5.0
+        enablePublicIPLookup = d.bool(forKey: "enablePublicIPLookup")
 
         // React to power state changes (AC ↔ Battery)
         powerMonitor.onStateChanged = { [weak self] in
             self?.startMonitoring()
         }
+
+        // Pause polling while the display or the system is asleep — no point
+        // reading IOKit, spawning processes and writing to disk when nobody
+        // can see it.
+        observeSleepWake()
     }
 
     func startMonitoring() {
         let interval = effectiveInterval
         let saving = powerMonitor.isOnBattery
+        let includePublicIP = enablePublicIPLookup
+        VitalsLog.app.info("startMonitoring: interval=\(interval, privacy: .public)s batterySaving=\(saving ? "true" : "false", privacy: .public)")
         Task {
             await monitor.setBatterySaving(saving)
+            await monitor.setIncludePublicIP(includePublicIP)
             await monitor.startPolling(interval: interval) { [weak self] newMetrics in
                 self?.updateMetrics(newMetrics)
             }
@@ -202,7 +233,31 @@ final class AppState {
     }
 
     func stopMonitoring() {
+        VitalsLog.app.info("stopMonitoring")
         Task { await monitor.stopPolling() }
+    }
+
+    /// Pauses monitoring while the display or the whole system sleeps and resumes
+    /// it on wake. Registered once for the app's lifetime, mirroring the
+    /// power-state observer above.
+    private func observeSleepWake() {
+        let center = NSWorkspace.shared.notificationCenter
+
+        for name in [NSWorkspace.screensDidSleepNotification, NSWorkspace.willSleepNotification] {
+            let token = center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                VitalsLog.power.info("sleep notification \(name.rawValue, privacy: .public) — pausing monitoring")
+                Task { @MainActor in self?.stopMonitoring() }
+            }
+            sleepWakeObservers.append(token)
+        }
+
+        for name in [NSWorkspace.screensDidWakeNotification, NSWorkspace.didWakeNotification] {
+            let token = center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                VitalsLog.power.info("wake notification \(name.rawValue, privacy: .public) — resuming monitoring")
+                Task { @MainActor in self?.startMonitoring() }
+            }
+            sleepWakeObservers.append(token)
+        }
     }
 
     // MARK: - Private
@@ -227,8 +282,22 @@ final class AppState {
             batteryHistory.append(Double(battery.percentage) / 100.0, at: now)
         }
 
-        DataSharingManager.writeMetrics(newMetrics)
+        throttledMetricsWrite(newMetrics)
         throttledWidgetRefresh()
+
+        // Redraw dependent UI (status-bar label) in lockstep with the data,
+        // rather than running a separate timer at the same interval.
+        onMetricsUpdate?()
+    }
+
+    private func throttledMetricsWrite(_ metrics: SystemMetrics) {
+        let now = Date()
+        // Widgets only reload every 30s, so persisting every tick (2s) just wakes
+        // the SSD for nothing. Write at most every 15s so the data is still fresh
+        // for the next widget refresh. The write itself runs off the main thread.
+        guard now.timeIntervalSince(lastMetricsWrite) >= 15 else { return }
+        lastMetricsWrite = now
+        DataSharingManager.writeMetrics(metrics)
     }
 
     private func throttledWidgetRefresh() {

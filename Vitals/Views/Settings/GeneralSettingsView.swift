@@ -1,11 +1,18 @@
 import SwiftUI
 import ServiceManagement
+import AppKit
 
 struct GeneralSettingsView: View {
 
     @Environment(AppState.self) private var appState
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var showBatteryInfo = false
+    @State private var copiedLogCommand = false
+
+    /// Terminal command that dumps the last 30 minutes of Vitals' unified logs.
+    /// Kept in sync with the Troubleshooting section of the README.
+    private let logCommand =
+        "log show --predicate 'subsystem == \"com.filiphajduch.vitals\"' --info --debug --last 30m"
 
     var body: some View {
         Form {
@@ -121,6 +128,19 @@ struct GeneralSettingsView: View {
                 Label("Menu Bar Items", systemImage: "menubar.rectangle")
             }
 
+            Section {
+                Toggle("Show public IP (queries api.ipify.org)", isOn: Binding(
+                    get: { appState.enablePublicIPLookup },
+                    set: { appState.enablePublicIPLookup = $0 }
+                ))
+            } header: {
+                Label("Privacy", systemImage: "hand.raised")
+            } footer: {
+                Text("When enabled, Vitals sends an HTTPS request to the external service api.ipify.org to look up your public IP address. Off by default.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("About") {
                 LabeledContent("App", value: "Vitals")
                 LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
@@ -133,10 +153,35 @@ struct GeneralSettingsView: View {
                         Link("filiphajduch420/Vitals", destination: repoURL)
                     }
                 }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Something not working — widgets show no data, a sensor reads zero? Copy this command and run it in Terminal to see the last 30 minutes of Vitals logs.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        copyLogCommand()
+                    } label: {
+                        Label(
+                            copiedLogCommand ? "Copied!" : "Copy log command",
+                            systemImage: copiedLogCommand ? "checkmark" : "doc.on.doc"
+                        )
+                    }
+                    .buttonStyle(.borderless)
+                }
             }
         }
         .formStyle(.grouped)
         .padding()
+    }
+
+    private func copyLogCommand() {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(logCommand, forType: .string)
+        copiedLogCommand = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            copiedLogCommand = false
+        }
     }
 
     private func moveMenuBarItem(at index: Int, direction: Int) {
@@ -153,7 +198,7 @@ struct GeneralSettingsView: View {
             appState.barCPUUsage = true
             appState.barCPUTemp = false
             appState.barFanRPM = false
-            appState.barGPU = true
+            appState.barGPU = false
             appState.barPower = false
             appState.barMemory = true
             appState.barNetworkDown = false

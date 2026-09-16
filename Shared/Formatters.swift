@@ -4,11 +4,18 @@ enum Formatters {
 
     // MARK: - Bytes
 
-    static func formatBytes(_ bytes: UInt64) -> String {
+    // Cached instance — allocating a ByteCountFormatter on every call is wasteful
+    // since formatBytes runs each tick from the menu bar label. Configured once and
+    // only read afterwards.
+    nonisolated(unsafe) private static let byteFormatter: ByteCountFormatter = {
         let f = ByteCountFormatter()
         f.allowedUnits = [.useAll]
         f.countStyle = .memory
-        return f.string(fromByteCount: Int64(bytes))
+        return f
+    }()
+
+    static func formatBytes(_ bytes: UInt64) -> String {
+        byteFormatter.string(fromByteCount: Int64(bytes))
     }
 
     // MARK: - Bytes/sec (network speed)

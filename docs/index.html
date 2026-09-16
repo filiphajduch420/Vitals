@@ -106,8 +106,32 @@
             <div class="version-list">
                 <article class="version-entry reveal">
                     <div class="version-meta">
-                        <h3 class="version-name">Version 2.3.1</h3>
+                        <h3 class="version-name">Version 2.4</h3>
                         <span class="version-badge">Latest</span>
+                        <time class="version-date" datetime="2026-09-16">September 16, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Privacy &amp; Performance</h4>
+                        <ul>
+                            <li>Public IP lookup is now opt-in and off by default &mdash; no automatic queries to api.ipify.org</li>
+                            <li>Wi-Fi local IP read via <code>getifaddrs()</code> instead of forking <code>ipconfig</code> every 2 seconds</li>
+                            <li>Monitoring pauses on display/system sleep and resumes on wake</li>
+                            <li>Shared metrics written off the main thread and throttled; slow-changing IOKit values cached</li>
+                        </ul>
+                        <h4>Correctness &amp; Diagnostics</h4>
+                        <ul>
+                            <li>Memory pressure now read from the real kernel signal &mdash; no more false warning/critical alarms</li>
+                            <li>WiFiMonitor converted to an actor (data-race fix)</li>
+                            <li>Unified logging (<code>os.Logger</code>) with a Copy log command button and a new Troubleshooting section</li>
+                            <li>Signed DMG builds with a hardened runtime and a SHA-256 checksum</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.4" class="version-download" target="_blank" rel="noopener">Download v2.4 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.3.1</h3>
                         <time class="version-date" datetime="2026-04-17">April 17, 2026</time>
                     </div>
                     <div class="version-body">
@@ -305,7 +329,8 @@
                     <h3>The App</h3>
                     <p>Vitals is a lightweight system monitor that lives in your macOS menu bar. It gives you instant access to CPU, GPU, memory, battery, network, disk, and WiFi stats &mdash; all wrapped in a native Liquid Glass interface that feels right at home on macOS 26 Tahoe.</p>
                     <p>Unlike other system monitors, Vitals uses Apple's private <code>NSGlassEffectView</code> API to render authentic glass effects, not approximations. The result is a UI that looks and feels like a built-in part of macOS.</p>
-                    <p>The app also includes four desktop widgets for at-a-glance system info, full menu bar customization, and a settings panel with appearance controls including glass style variants, opacity, and text scaling.</p>
+                    <p>The app also includes five desktop widgets for at-a-glance system info, full menu bar customization, and a settings panel with appearance controls including glass style variants, opacity, and text scaling.</p>
+                    <p><strong>A note on widgets:</strong> the pre-built (unsigned) download has no valid App Group entitlement, so the desktop widgets may not display data. For fully working widgets, build from source with your own Apple ID &mdash; even a free one works.</p>
                 </div>
 
                 <div class="about-section reveal">
@@ -321,7 +346,8 @@
                 <div class="about-section about-notice reveal">
                     <h3>Why the security warning?</h3>
                     <p>When you first open Vitals, macOS will warn you that it &ldquo;cannot verify the developer.&rdquo; This is because the app is not notarized with Apple &mdash; I'm a student and can't afford the $99/year Apple Developer Program fee.</p>
-                    <p>To open the app, go to <strong>System Settings &rarr; Privacy &amp; Security</strong> and click <strong>&ldquo;Open Anyway&rdquo;</strong> next to the Vitals message. You only need to do this once.</p>
+                    <p>To open the app, go to <strong>System Settings &rarr; Privacy &amp; Security</strong> and click <strong>&ldquo;Open Anyway&rdquo;</strong> next to the Vitals message. You only need to do this once. Since macOS 15 Sequoia, right-clicking the app and choosing &ldquo;Open&rdquo; no longer works for unsigned apps &mdash; use the <strong>&ldquo;Open Anyway&rdquo;</strong> button instead.</p>
+                    <p>Before installing, verify the download with the <code>.sha256</code> file published alongside each release (<code>shasum -a 256 -c Vitals-vX.dmg.sha256</code>). If you prefer the Terminal, you can also clear the quarantine flag directly with <code>xattr -dr com.apple.quarantine /Applications/Vitals.app</code>.</p>
                     <p>The entire source code is available on GitHub. You can audit it, build it yourself, and verify that it does exactly what it says &mdash; nothing more.</p>
                 </div>
 

@@ -1,5 +1,6 @@
 import Foundation
 import Darwin
+import os
 
 final class CPUMonitor: @unchecked Sendable {
 
@@ -26,6 +27,7 @@ final class CPUMonitor: @unchecked Sendable {
         )
 
         guard result == KERN_SUCCESS, let info = cpuInfo else {
+            VitalsLog.cpu.error("host_processor_info failed: kr=\(result, privacy: .public)")
             return .empty
         }
 
@@ -55,7 +57,10 @@ final class CPUMonitor: @unchecked Sendable {
         previousTicks = currentTicks
 
         let deltaTotal = deltaUser + deltaSystem + deltaIdle + deltaNice
-        guard deltaTotal > 0 else { return .empty }
+        guard deltaTotal > 0 else {
+            VitalsLog.cpu.debug("CPU tick delta was zero — skipping sample")
+            return .empty
+        }
 
         let userRatio   = (deltaUser + deltaNice) / deltaTotal
         let systemRatio = deltaSystem / deltaTotal

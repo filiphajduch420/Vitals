@@ -20,3 +20,4 @@ scripts/
 # Claude
 .claude/
 .impeccable.md
+ORCHESTRATION_LOG.md

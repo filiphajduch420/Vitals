@@ -1,20 +1,24 @@
 import Foundation
 import CoreWLAN
 import SystemConfiguration
+import Darwin
+import os
 
-final class WiFiMonitor: @unchecked Sendable {
+actor WiFiMonitor {
 
     private var cachedSSID: String?
     private var lastSSIDRefresh: Date = .distantPast
     private var cachedPublicIP: String?
     private var lastPublicIPRefresh: Date = .distantPast
 
-    func read() async -> WiFiMetrics {
+    func read(includePublicIP: Bool) async -> WiFiMetrics {
         guard let iface = CWWiFiClient.shared().interface() else {
+            VitalsLog.wifi.debug("no Wi-Fi interface available")
             return .empty
         }
 
         guard iface.powerOn() else {
+            VitalsLog.wifi.debug("Wi-Fi interface powered off")
             return .empty
         }
 
@@ -45,15 +49,23 @@ final class WiFiMonitor: @unchecked Sendable {
         }
 
         let connected = ssid != nil || rssi != 0 || hasIPAddress(interfaceName)
-        guard connected else { return .empty }
+        guard connected else {
+            VitalsLog.wifi.debug("Wi-Fi not connected")
+            return .empty
+        }
 
         // Local IP
         let localIP = getLocalIP(interfaceName)
 
-        // Public IP — refresh every 5 minutes
-        if cachedPublicIP == nil || Date().timeIntervalSince(lastPublicIPRefresh) >= 300 {
-            lastPublicIPRefresh = Date()
-            cachedPublicIP = await getPublicIP()
+        // Public IP — opt-in only; refresh every 5 minutes when enabled
+        if includePublicIP {
+            if cachedPublicIP == nil || Date().timeIntervalSince(lastPublicIPRefresh) >= 300 {
+                lastPublicIPRefresh = Date()
+                cachedPublicIP = await getPublicIP()
+            }
+        } else {
+            cachedPublicIP = nil
+            lastPublicIPRefresh = .distantPast
         }
 
         return WiFiMetrics(
@@ -70,9 +82,50 @@ final class WiFiMonitor: @unchecked Sendable {
     // MARK: - IP addresses
 
     private func getLocalIP(_ interfaceName: String) -> String? {
-        let output = shell("/usr/sbin/ipconfig", ["getifaddr", interfaceName])
-        let ip = output.trimmingCharacters(in: .whitespacesAndNewlines)
-        return ip.isEmpty ? nil : ip
+        var ifaddr: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else {
+            VitalsLog.wifi.error("getifaddrs failed for local IP: errno=\(errno, privacy: .public)")
+            return nil
+        }
+        defer { freeifaddrs(ifaddr) }
+
+        var ipv4: String?
+        var ipv6: String?
+
+        var cursor: UnsafeMutablePointer<ifaddrs>? = firstAddr
+        while let addr = cursor {
+            defer { cursor = addr.pointee.ifa_next }
+
+            guard let sockaddr = addr.pointee.ifa_addr else { continue }
+            guard String(cString: addr.pointee.ifa_name) == interfaceName else { continue }
+
+            let family = sockaddr.pointee.sa_family
+            guard family == UInt8(AF_INET) || family == UInt8(AF_INET6) else { continue }
+
+            var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            let result = getnameinfo(
+                sockaddr,
+                socklen_t(sockaddr.pointee.sa_len),
+                &host,
+                socklen_t(host.count),
+                nil,
+                0,
+                NI_NUMERICHOST
+            )
+            guard result == 0 else { continue }
+
+            let ip = String(decoding: host.prefix(while: { $0 != 0 }).map { UInt8(bitPattern: $0) }, as: UTF8.self)
+            guard !ip.isEmpty else { continue }
+
+            // Prefer IPv4 (matches previous `ipconfig getifaddr` behaviour); keep IPv6 as fallback
+            if family == UInt8(AF_INET) {
+                ipv4 = ip
+            } else if ipv6 == nil {
+                ipv6 = ip
+            }
+        }
+
+        return ipv4 ?? ipv6
     }
 
     private func getPublicIP() async -> String? {
@@ -82,7 +135,10 @@ final class WiFiMonitor: @unchecked Sendable {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else { return nil }
+                  httpResponse.statusCode == 200 else {
+                VitalsLog.wifi.warning("public IP lookup: unexpected HTTP response")
+                return nil
+            }
             guard let ip = String(data: data, encoding: .utf8)?
                 .trimmingCharacters(in: .whitespacesAndNewlines),
                   !ip.isEmpty else { return nil }
@@ -90,9 +146,14 @@ final class WiFiMonitor: @unchecked Sendable {
             let ipv4Pattern = #"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"#
             let isIPv4 = ip.range(of: ipv4Pattern, options: .regularExpression) != nil
             let isIPv6 = ip.contains(":")
-            guard isIPv4 || isIPv6 else { return nil }
+            guard isIPv4 || isIPv6 else {
+                VitalsLog.wifi.warning("public IP lookup: response was not a valid IP")
+                return nil
+            }
             return ip
         } catch {
+            // Never log the IP itself; the error description is private by default.
+            VitalsLog.wifi.error("public IP lookup failed: \(error.localizedDescription)")
             return nil
         }
     }

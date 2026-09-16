@@ -1,5 +1,6 @@
 import Foundation
 import IOKit
+import os
 
 final class GPUMonitor: @unchecked Sendable {
 
@@ -39,6 +40,8 @@ final class GPUMonitor: @unchecked Sendable {
                 IOObjectRelease(service)
                 service = IOIteratorNext(iterator)
             }
+        } else {
+            VitalsLog.gpu.error("IOServiceGetMatchingServices(AGXAccelerator) failed")
         }
 
         // Fallback: try Intel/AMD GPU
@@ -65,6 +68,8 @@ final class GPUMonitor: @unchecked Sendable {
                         IOObjectRelease(service)
                         service = IOIteratorNext(accelIterator)
                     }
+                } else {
+                    VitalsLog.gpu.error("IOServiceGetMatchingServices(IOAccelerator) failed")
                 }
             }
         }

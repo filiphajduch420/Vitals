@@ -7,7 +7,6 @@ final class StatusBarController {
     private var panel: NSPanel!
     private var appState: AppState
     private var globalMonitor: Any?
-    private var labelUpdateTask: Task<Void, Never>?
 
     init(appState: AppState) {
         self.appState = appState
@@ -16,8 +15,9 @@ final class StatusBarController {
     }
 
     nonisolated deinit {
-        // Note: cleanup happens via hidePanel() during normal usage.
-        // globalMonitor and labelUpdateTask are cleaned up by ARC.
+        // The global event monitor needs an explicit NSEvent.removeMonitor —
+        // ARC does not clean it up. It is removed in hidePanel(), which runs
+        // whenever the panel closes, so nothing is left to release here.
     }
 
     // MARK: - Status Item
@@ -30,17 +30,10 @@ final class StatusBarController {
             updateLabel()
         }
 
-        startLabelUpdates()
-    }
-
-    private func startLabelUpdates() {
-        labelUpdateTask?.cancel()
-        labelUpdateTask = Task { [weak self] in
-            while !Task.isCancelled {
-                guard let self else { return }
-                self.updateLabel()
-                try? await Task.sleep(for: .seconds(self.appState.effectiveInterval))
-            }
+        // Redraw the label whenever new metrics arrive, driven by SystemMonitor's
+        // polling — no separate timer, so the label stays in sync with the data.
+        appState.onMetricsUpdate = { [weak self] in
+            self?.updateLabel()
         }
     }
 

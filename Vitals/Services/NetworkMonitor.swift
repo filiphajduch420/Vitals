@@ -1,5 +1,6 @@
 import Foundation
 import Darwin
+import os
 
 final class NetworkMonitor: @unchecked Sendable {
 
@@ -52,6 +53,7 @@ final class NetworkMonitor: @unchecked Sendable {
     private func readInterfaceBytes() -> (bytesIn: UInt64, bytesOut: UInt64) {
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else {
+            VitalsLog.network.error("getifaddrs failed: errno=\(errno, privacy: .public)")
             return (0, 0)
         }
         defer { freeifaddrs(ifaddr) }

@@ -23,6 +23,14 @@ actor SystemMonitor {
     func setBatterySaving(_ value: Bool) {
         isBatterySaving = value
     }
+
+    // MARK: - Public IP lookup (opt-in)
+
+    private(set) var includePublicIP: Bool = false
+
+    func setIncludePublicIP(_ value: Bool) {
+        includePublicIP = value
+    }
     private var cycleCount: Int = 0
 
     private var cachedThermal: ThermalMetrics?
@@ -68,7 +76,7 @@ actor SystemMonitor {
         let memory = memoryMonitor.read()
         let network = networkMonitor.read()
         let battery = hasBattery ? batteryMonitor.read() : nil
-        let wifi = await wifiMonitor.read()
+        let wifi = await wifiMonitor.read(includePublicIP: includePublicIP)
         let systemInfo = systemInfoMonitor.read()
         let uptime = ProcessInfo.processInfo.systemUptime
 
