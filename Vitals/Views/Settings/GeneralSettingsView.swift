@@ -8,6 +8,59 @@ struct GeneralSettingsView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var showBatteryInfo = false
     @State private var copiedLogCommand = false
+    @State private var updateState: UpdateState = .idle
+    @State private var language: AppLanguage = .current
+
+    /// Inline status shown next to the "Check for Updates" button.
+    private enum UpdateState: Equatable {
+        case idle
+        case checking
+        case upToDate
+        case updateAvailable(version: String, url: URL)
+        case failed
+    }
+
+    /// UI language override applied through the per-app `AppleLanguages` default.
+    /// `.system` clears the override so the app follows the system language.
+    private enum AppLanguage: String, CaseIterable, Identifiable {
+        case system, english, czech
+
+        var id: String { rawValue }
+
+        /// Language code written to the per-app `AppleLanguages` array, or `nil`
+        /// for `.system` (which removes the key entirely).
+        private var code: String? {
+            switch self {
+            case .system:  return nil
+            case .english: return "en"
+            case .czech:   return "cs"
+            }
+        }
+
+        /// The currently active override, read from the app's own defaults domain
+        /// (not the resolved system list) so `.system` is detected accurately.
+        static var current: AppLanguage {
+            let bundleID = Bundle.main.bundleIdentifier ?? ""
+            let domain = UserDefaults.standard.persistentDomain(forName: bundleID)
+            guard let langs = domain?["AppleLanguages"] as? [String],
+                  let first = langs.first else {
+                return .system
+            }
+            if first.hasPrefix("cs") { return .czech }
+            if first.hasPrefix("en") { return .english }
+            return .system
+        }
+
+        /// Persists this choice. The change is picked up on the next launch.
+        func apply() {
+            let defaults = UserDefaults.standard
+            if let code {
+                defaults.set([code], forKey: "AppleLanguages")
+            } else {
+                defaults.removeObject(forKey: "AppleLanguages")
+            }
+        }
+    }
 
     /// Terminal command that dumps the last 30 minutes of Vitals' unified logs.
     /// Kept in sync with the Troubleshooting section of the README.
@@ -29,6 +82,32 @@ struct GeneralSettingsView: View {
                             launchAtLogin = !newValue
                         }
                     }
+            }
+
+            Section {
+                Picker("Language", selection: $language) {
+                    Text("System").tag(AppLanguage.system)
+                    Text(verbatim: "English").tag(AppLanguage.english)
+                    Text(verbatim: "Čeština").tag(AppLanguage.czech)
+                }
+                .onChange(of: language) { _, newValue in
+                    newValue.apply()
+                }
+
+                HStack {
+                    Text("Takes effect after relaunch")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Button {
+                        relaunchApp()
+                    } label: {
+                        Text("Relaunch Now")
+                    }
+                    .controlSize(.small)
+                }
+            } header: {
+                Label("Language", systemImage: "globe")
             }
 
             Section("Update Interval") {
@@ -79,7 +158,9 @@ struct GeneralSettingsView: View {
                     Image(systemName: appState.powerMonitor.isOnBattery ? "battery.50percent" : "powerplug.fill")
                         .font(.system(size: 10))
                         .foregroundStyle(appState.powerMonitor.isOnBattery ? .orange : .green)
-                    Text(appState.powerMonitor.isOnBattery ? "On battery — saving mode active" : "On AC power — full performance")
+                    Text(appState.powerMonitor.isOnBattery
+                         ? LocalizedStringKey("On battery — saving mode active")
+                         : LocalizedStringKey("On AC power — full performance"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -154,6 +235,18 @@ struct GeneralSettingsView: View {
                     }
                 }
 
+                HStack(spacing: 8) {
+                    Button {
+                        checkForUpdates()
+                    } label: {
+                        Label("Check for Updates", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(updateState == .checking)
+
+                    updateStatusView
+                }
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Something not working — widgets show no data, a sensor reads zero? Copy this command and run it in Terminal to see the last 30 minutes of Vitals logs.")
                         .font(.caption)
@@ -162,7 +255,7 @@ struct GeneralSettingsView: View {
                         copyLogCommand()
                     } label: {
                         Label(
-                            copiedLogCommand ? "Copied!" : "Copy log command",
+                            copiedLogCommand ? LocalizedStringKey("Copied!") : LocalizedStringKey("Copy log command"),
                             systemImage: copiedLogCommand ? "checkmark" : "doc.on.doc"
                         )
                     }
@@ -174,6 +267,54 @@ struct GeneralSettingsView: View {
         .padding()
     }
 
+    @ViewBuilder
+    private var updateStatusView: some View {
+        switch updateState {
+        case .idle:
+            EmptyView()
+        case .checking:
+            HStack(spacing: 4) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Checking…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        case .upToDate:
+            Label("Up to date", systemImage: "checkmark.circle.fill")
+                .font(.caption)
+                .foregroundStyle(.green)
+        case let .updateAvailable(version, url):
+            Link(destination: url) {
+                Label("Update available: \(version)", systemImage: "arrow.down.circle.fill")
+                    .font(.caption)
+            }
+        case .failed:
+            Label("Could not check for updates", systemImage: "exclamationmark.triangle")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    /// Runs only on an explicit tap — no automatic/background checks.
+    private func checkForUpdates() {
+        updateState = .checking
+        Task { @MainActor in
+            do {
+                let result = try await UpdateChecker().checkForUpdate()
+                switch result {
+                case .upToDate:
+                    updateState = .upToDate
+                case let .updateAvailable(version, url):
+                    updateState = .updateAvailable(version: version, url: url)
+                }
+            } catch {
+                // The checker already logged the specific failure via VitalsLog.app.
+                updateState = .failed
+            }
+        }
+    }
+
     private func copyLogCommand() {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(logCommand, forType: .string)
@@ -181,6 +322,24 @@ struct GeneralSettingsView: View {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(2))
             copiedLogCommand = false
+        }
+    }
+
+    /// Relaunches Vitals so a new language override takes effect. Spawns a fresh
+    /// instance of our own bundle (the `open -n` equivalent) and then terminates
+    /// only this process — never touches any other running app.
+    private func relaunchApp() {
+        let bundleURL = Bundle.main.bundleURL
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: bundleURL, configuration: config) { _, error in
+            if let error {
+                VitalsLog.app.error("relaunch failed: \(error.localizedDescription, privacy: .public)")
+                return
+            }
+            Task { @MainActor in
+                NSApp.terminate(nil)
+            }
         }
     }
 

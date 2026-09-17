@@ -71,7 +71,7 @@ struct WidgetGradientBackground: View {
 
 struct WidgetHeader: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     var tint: Color = .secondary
 
     var body: some View {
@@ -87,25 +87,70 @@ struct WidgetHeader: View {
     }
 }
 
-// MARK: - Stat row (label + value)
+// MARK: - Medium widget header
 
+/// The shared header used by the medium layouts: a small icon + rounded
+/// title pinned to the leading edge, with an optional trailing accessory
+/// (e.g. the charging bolt). Gives every medium widget the same header
+/// rhythm and left alignment.
+struct WidgetMediumHeader<Trailing: View>: View {
+    let icon: String
+    let title: LocalizedStringKey
+    @ViewBuilder var trailing: () -> Trailing
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+            Text(title)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+            trailing()
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+extension WidgetMediumHeader where Trailing == EmptyView {
+    init(icon: String, title: LocalizedStringKey) {
+        self.init(icon: icon, title: title, trailing: { EmptyView() })
+    }
+}
+
+// MARK: - Stat row (label left, value right)
+
+/// A table-style row: the label sizes to its natural width (never wraps
+/// mid-word, even with long Czech strings like "Kondice" or "Spuštěno"),
+/// and the value is pushed to the trailing edge so a column of rows reads
+/// like a neat two-column table that fills the card width.
 struct WidgetStatRow: View {
-    let label: String
+    let label: LocalizedStringKey
     let value: String
-    var labelWidth: CGFloat = 38
     var valueColor: Color = .primary
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text(label)
                 .font(.system(size: 10, weight: .medium, design: .rounded))
                 .foregroundStyle(.secondary)
-                .frame(width: labelWidth, alignment: .leading)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                // Size to the label's natural width so it never breaks
+                // in the middle of a word.
+                .fixedSize(horizontal: true, vertical: false)
+
+            Spacer(minLength: 6)
+
             Text(value)
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(valueColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .multilineTextAlignment(.trailing)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 

@@ -50,9 +50,13 @@ final class BatteryMonitor: @unchecked Sendable {
         if cachedCycleCount == nil || Date().timeIntervalSince(lastBatteryHealthRefresh) >= 300 {
             lastBatteryHealthRefresh = Date()
             cachedCycleCount = readSmartBatteryValue("CycleCount") as? Int
-            // Battery health: AppleRawMaxCapacity (mAh) vs DesignCapacity (mAh)
+            // Battery health: AppleRawMaxCapacity (mAh) vs DesignCapacity (mAh).
+            // On Apple Silicon the capacity keys are nested inside "BatteryData"
+            // rather than top-level (top-level MaxCapacity is a percentage).
+            let batteryData = readSmartBatteryValue("BatteryData") as? [String: Any]
             cachedMaxCapacity = readSmartBatteryValue("AppleRawMaxCapacity") as? Int
                 ?? readSmartBatteryValue("NominalChargeCapacity") as? Int
+                ?? batteryData?["NominalChargeCapacity"] as? Int
         }
         let cycleCount = cachedCycleCount
         let maxCapacity = cachedMaxCapacity
@@ -60,6 +64,7 @@ final class BatteryMonitor: @unchecked Sendable {
         // DesignCapacity never changes — read once and keep forever
         if !designCapacityLoaded {
             cachedDesignCapacity = readSmartBatteryValue("DesignCapacity") as? Int
+                ?? (readSmartBatteryValue("BatteryData") as? [String: Any])?["DesignCapacity"] as? Int
             designCapacityLoaded = true
         }
         let designCapacity = cachedDesignCapacity

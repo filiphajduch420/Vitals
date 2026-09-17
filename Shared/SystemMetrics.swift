@@ -230,20 +230,21 @@ enum MetricType: String, CaseIterable, Codable, Sendable, Identifiable {
 // MARK: - Popover Section (for drag & drop ordering)
 
 enum PopoverSection: String, CaseIterable, Codable, Sendable, Identifiable {
-    case cpu, gpu, memory, battery, system, disk, wifi, network
+    case cpu, gpu, memory, battery, system, disk, wifi, network, processes
 
     var id: String { rawValue }
 
     var label: String {
         switch self {
-        case .system:  return "System"
-        case .cpu:     return "CPU"
-        case .gpu:     return "GPU"
-        case .memory:  return "Memory"
-        case .network: return "Network"
-        case .battery: return "Battery"
-        case .disk:    return "Disk"
-        case .wifi:    return "WiFi"
+        case .system:    return String(localized: "System")
+        case .cpu:       return "CPU"
+        case .gpu:       return "GPU"
+        case .memory:    return String(localized: "Memory")
+        case .network:   return String(localized: "Network")
+        case .battery:   return String(localized: "Battery")
+        case .disk:      return "Disk"
+        case .wifi:      return "WiFi"
+        case .processes: return String(localized: "Top Processes")
         }
     }
 }
@@ -258,18 +259,18 @@ enum MenuBarItem: String, CaseIterable, Codable, Sendable, Identifiable {
 
     var label: String {
         switch self {
-        case .cpuUsage:    return "CPU Usage"
-        case .cpuTemp:     return "CPU Temperature"
-        case .fanRPM:      return "Fan Speed"
-        case .gpu:         return "GPU Usage"
-        case .power:       return "System Power"
-        case .memory:      return "Memory"
-        case .networkDown: return "Network Down"
-        case .networkUp:   return "Network Up"
-        case .battery:     return "Battery"
-        case .batteryTime: return "Battery Time"
-        case .disk:        return "Disk Usage"
-        case .ip:          return "Local IP"
+        case .cpuUsage:    return String(localized: "CPU Usage")
+        case .cpuTemp:     return String(localized: "CPU Temperature")
+        case .fanRPM:      return String(localized: "Fan Speed")
+        case .gpu:         return String(localized: "GPU Usage")
+        case .power:       return String(localized: "System Power")
+        case .memory:      return String(localized: "Memory")
+        case .networkDown: return String(localized: "Network Down")
+        case .networkUp:   return String(localized: "Network Up")
+        case .battery:     return String(localized: "Battery")
+        case .batteryTime: return String(localized: "Battery Time")
+        case .disk:        return String(localized: "Disk Usage")
+        case .ip:          return String(localized: "Local IP")
         }
     }
 }

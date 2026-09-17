@@ -14,7 +14,21 @@ final class AppState {
     var batteryHistory = MetricHistory(capacity: 60)
     var diskHistory = MetricHistory(capacity: 60)
 
+    /// Top processes by CPU / RAM. Populated on demand while a CPU or Memory
+    /// popover detail is visible (see `refreshTopProcesses()`), never from the
+    /// regular polling tick — a full process scan every 2 s would drain battery.
+    var topProcessesByCPU: [ProcessUsage] = []
+    var topProcessesByMemory: [ProcessUsage] = []
+
+    /// Whether the popover panel is currently on screen. Toggled explicitly by
+    /// `StatusBarController.showPanel()`/`hidePanel()`. The popover is a reused
+    /// NSPanel that does not reliably fire SwiftUI's `onDisappear` on hide, so
+    /// the CPU/Memory detail scan loops gate on this flag rather than trusting
+    /// `.task` cancellation — this guarantees no process scan runs while closed.
+    var isPopoverVisible: Bool = false
+
     private let monitor = SystemMonitor()
+    private let processMonitor = ProcessMonitor()
     let powerMonitor = PowerStateMonitor()
     private var lastWidgetRefresh: Date = .distantPast
     private var lastMetricsWrite: Date = .distantPast
@@ -61,6 +75,7 @@ final class AppState {
     var sectionWiFi: Bool = true { didSet { save(sectionWiFi, forKey: "sectionWiFi") } }
     var sectionGPU: Bool = true { didSet { save(sectionGPU, forKey: "sectionGPU") } }
     var sectionSystem: Bool = true { didSet { save(sectionSystem, forKey: "sectionSystem") } }
+    var sectionProcesses: Bool = true { didSet { save(sectionProcesses, forKey: "sectionProcesses") } }
 
     var sectionOrder: [PopoverSection] = PopoverSection.allCases {
         didSet { saveSectionOrder() }
@@ -165,6 +180,7 @@ final class AppState {
             d.set(true, forKey: "sectionMemory")
             d.set(true, forKey: "sectionBattery")
             d.set(true, forKey: "sectionSystem")
+            d.set(true, forKey: "sectionProcesses")
             d.set(false, forKey: "sectionDisk")
             d.set(false, forKey: "sectionWiFi")
             d.set(false, forKey: "sectionNetwork")
@@ -194,6 +210,7 @@ final class AppState {
         sectionDisk = d.bool(forKey: "sectionDisk")
         sectionWiFi = d.bool(forKey: "sectionWiFi")
         sectionSystem = d.object(forKey: "sectionSystem") == nil ? true : d.bool(forKey: "sectionSystem")
+        sectionProcesses = d.object(forKey: "sectionProcesses") == nil ? true : d.bool(forKey: "sectionProcesses")
         sectionOrder = loadSectionOrder()
         glassOpacity = d.object(forKey: "glassOpacity") != nil ? d.double(forKey: "glassOpacity") : 0.0
         glassVariant = GlassVariant(rawValue: d.integer(forKey: "glassVariant")) ?? .default
@@ -235,6 +252,15 @@ final class AppState {
     func stopMonitoring() {
         VitalsLog.app.info("stopMonitoring")
         Task { await monitor.stopPolling() }
+    }
+
+    /// Refreshes the top-processes lists. Called on demand from the CPU/Memory
+    /// popover details (on appear and on their visibility-scoped timer), so the
+    /// expensive process scan only runs while its output is actually on screen.
+    func refreshTopProcesses() async {
+        let snapshot = await processMonitor.topProcesses()
+        topProcessesByCPU = snapshot.byCPU
+        topProcessesByMemory = snapshot.byMemory
     }
 
     /// Pauses monitoring while the display or the whole system sleeps and resumes
@@ -318,6 +344,7 @@ final class AppState {
         case .battery: return sectionBattery && metrics.battery != nil
         case .disk:    return sectionDisk
         case .wifi:    return sectionWiFi
+        case .processes: return sectionProcesses
         }
     }
 

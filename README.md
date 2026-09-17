@@ -4,7 +4,7 @@ A lightweight macOS menu bar app that monitors your system in real time with a b
 
 Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 
-**Current version: 2.4** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
+**Current version: 2.5** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 > **Note:** This app is not signed with an Apple Developer certificate. When you first open it, macOS will show a warning saying it "cannot verify the app is free of malware." To open it, go to **System Settings > Privacy & Security** and click **"Open Anyway"** next to the Vitals message. I'm a student and can't afford the $99/year Apple Developer Program fee, but the app is fully open source — you can review every line of code and build it yourself.
 
@@ -20,12 +20,13 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 - **Disk** — Usage bar, free space, read/write speeds, SSD temperature
 - **WiFi** — Connection status, signal strength, link speed, channel, local IP, and public IP (opt-in — the public IP lookup is disabled by default and queries an external service only when you enable it)
 - **System Info** — Computer name, user, macOS version, uptime
-- **Desktop Widgets** — Liquid Glass-style, macOS Tahoe-native widgets with donut rings, angular gradients, status-color glow, SF Pro Rounded typography, and accented rendering mode support:
-  - **System Overview** *(new in v2.3)* — medium and large sizes with two donut rings for Battery and Storage plus network info below
+- **Top Processes** — Top 5 processes by CPU or Memory (segmented switch) in the popover, with Activity Monitor-style CPU %; the scan only runs while the popover is open, so it stays battery-friendly
+- **Desktop Widgets** — Liquid Glass-style, macOS Tahoe-native widgets with donut rings, angular gradients, status-color glow, SF Pro Rounded typography, and accented rendering mode support. Each widget computes its own data inside the widget process, so it shows real data everywhere — including the pre-built (unsigned) build with no App Group:
   - **Storage** — donut ring with used %, free space, and Used/Free/Total breakdown
-  - **Battery** — donut ring with charging bolt, Status/Health/Cycles/Time remaining
-  - **Network Info** — donut ring showing signal quality % (from RSSI), SSID, Local/Public IP, and signal
-  - **System Health** — at-a-glance status
+  - **Battery** — donut ring with charging bolt, Status/Health/Cycles/Time remaining, including battery health % and cycle count (a figure macOS doesn't show anywhere obvious)
+  - **System Info** — a live, ticking uptime that stays current without spending refresh budget, plus macOS version, Mac model, and boot time
+- **Localization** — The whole app and its widgets are localized; the language follows your system by default, with a System / English / Čeština switch (and Relaunch) in General settings
+- **Check for Updates** — A button in Settings > General > About that checks the GitHub Releases API on demand (privacy-first — only when you click it)
 - **Customizable** — Reorder sections and menu bar items, toggle visibility, adjust text size, choose glass style
 
 ## Screenshots
@@ -42,29 +43,17 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 ### Settings - General
 ![Settings General](media/settings_general.png)
 
-## What's New in v2.4
+## What's New in v2.5
 
-- **Public IP is now opt-in** — the app no longer queries `api.ipify.org` automatically; turn on "Show public IP" in General settings if you want it
-- **Lighter on the battery** — Wi-Fi local IP is read via `getifaddrs()` instead of forking `ipconfig` every 2 seconds
-- **Pauses on sleep** — monitoring stops when the display or system sleeps and resumes on wake
-- **Smoother, quieter I/O** — `metrics.json` is written off the main thread and throttled, and slow-changing IOKit values are cached
-- **Accurate memory pressure** — read from the real kernel signal, so no more false "warning"/"critical" alarms
-- **Fewer timers** — the menu bar label now redraws directly when new metrics arrive
-- **Data-race fix** — `WiFiMonitor` is now an actor
-- **Widgets are gentler on WidgetKit's refresh budget** — no design changes; the System Health widget now reflects the corrected memory-pressure signal
-
-### Logging & Troubleshooting
-
-- Unified logging via `os.Logger` under the subsystem `com.filiphajduch.vitals`, with per-area categories
-- New **Copy log command** button in Settings > General > About
-- New **Troubleshooting / Logs** section in this README
-
-### Distribution & Security
-
-- Public IP lookup is opt-in and disabled by default — no automatic third-party requests
-- `create-dmg.sh` now ad-hoc signs the app and widget with a hardened runtime, stages in private temp directories, and publishes a SHA-256 checksum
-- `metrics.json` is created with owner-only (`0600`) permissions from the start
-- Updated install instructions (Open Anyway, checksum verification, `xattr`)
+- **Widgets that work for everyone** — the Storage, Battery, and System Info widgets now compute their data themselves inside the widget process, so they show real data even on the pre-built (unsigned) DMG build with no App Group
+- **Battery health on your desktop** — the Battery widget now surfaces battery health % and cycle count, a figure macOS doesn't show anywhere obvious
+- **Live uptime** — the new System Info widget renders a ticking uptime that stays current without spending refresh budget, alongside macOS version, Mac model, and boot time
+- **Real-time widgets removed** — System Overview, System Health, and Network Info are gone; WidgetKit's ~15-minute refresh budget made their instantaneous values stale and misleading (real-time lives in the menu bar and popover, where it works)
+- **Top Processes** — a new popover card listing the top 5 processes by CPU or Memory, with Activity Monitor-style CPU %; it scans only while the popover is open
+- **Czech localization** — the whole app and its widgets are localized, with a System / English / Čeština switch (and Relaunch) in General settings
+- **Check for Updates** — a privacy-first button in About that checks the GitHub Releases API only when you click it
+- **Widget redesign** — unified headers, full-width two-column layouts, SF Pro Rounded typography, and monospaced digits across every widget
+- **Fixed: battery health on Apple Silicon** — capacity is now also read from the nested `BatteryData` dictionary; health % had been missing from the popover since v2.3 on these Macs
 
 See [CHANGELOG.md](CHANGELOG.md) for the complete list of changes.
 
@@ -116,7 +105,7 @@ The recommended way to install a pre-built build:
 xattr -dr com.apple.quarantine /Applications/Vitals.app
 ```
 
-> **Widgets and the pre-built build:** the pre-compiled (unsigned) build has no valid App Group entitlement, so the **desktop widgets may not display data**. For fully working widgets, build from source with your own Apple ID — even a free one works. On a macOS app the 7-day provisioning-profile limit doesn't get in the way, because Xcode re-signs the app on every build.
+> **Widgets and the pre-built build:** as of v2.5 the desktop widgets **work on the pre-compiled (unsigned) build too** — they compute their data themselves inside the widget process instead of relying on the App Group. Building from source with your own Apple ID (even a free one) is still worthwhile: with a valid App Group entitlement the widgets can prefer fresh data straight from the running app when it's available.
 
 ## Usage
 
@@ -142,7 +131,8 @@ After launching, Vitals lives in your menu bar. Click the menu bar items to open
 
 ## Known limitations
 
-- macOS hides Wi-Fi SSID names from apps without Location Services permission; the Network widget shows "Wi-Fi" as a fallback label when the name can't be read.
+- macOS hides Wi-Fi SSID names from apps without Location Services permission; the WiFi section shows "Wi-Fi" as a fallback label when the name can't be read.
+- The per-app language override doesn't propagate to the widget extension, so widgets follow the system language; Czech widget strings show when the system language is Czech.
 
 ## Troubleshooting / Logs
 

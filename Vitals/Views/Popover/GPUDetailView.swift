@@ -29,7 +29,7 @@ struct GPUDetailView: View {
 
                 HStack(spacing: 12) {
                     if let util = gpu.utilization {
-                        iconStat("gauge.high", "Load \(Int(util * 100))%")
+                        iconStat("gauge.high", "\(String(localized: "Load")) \(Int(util * 100))%")
                     }
                     if let used = gpu.vramUsed {
                         iconStat("memorychip", "VRAM \(Formatters.formatBytes(used))")

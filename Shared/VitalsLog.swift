@@ -30,6 +30,8 @@ enum VitalsLog {
 
     static let cpu = Logger(subsystem: subsystem, category: "cpu")
     static let gpu = Logger(subsystem: subsystem, category: "gpu")
+    /// Top-processes scan for the CPU/Memory popover details (on-demand only).
+    static let processes = Logger(subsystem: subsystem, category: "processes")
     static let memory = Logger(subsystem: subsystem, category: "memory")
     static let battery = Logger(subsystem: subsystem, category: "battery")
     static let thermal = Logger(subsystem: subsystem, category: "thermal")

@@ -52,4 +52,15 @@ enum Formatters {
     static func formatPercent(_ ratio: Double) -> String {
         "\(Int(ratio * 100))%"
     }
+
+    /// Formats an already-computed CPU percentage (0…N, may exceed 100 for
+    /// multi-threaded processes). Shows one decimal place below 10% so small but
+    /// non-zero consumers stay visible (e.g. "3.4%"), and whole numbers at or
+    /// above 10% to keep the top-processes list compact.
+    static func formatCPUPercent(_ percent: Double) -> String {
+        let value = max(0, percent)
+        // Locale-aware decimal separator so the card matches ByteCountFormatter output.
+        let digits = value < 10 ? 1 : 0
+        return value.formatted(.number.precision(.fractionLength(digits))) + "%"
+    }
 }

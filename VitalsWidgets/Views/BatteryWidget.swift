@@ -5,7 +5,7 @@ struct BatteryWidget: Widget {
     let kind = "BatteryWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: VitalsTimelineProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: LocalMetricsProvider()) { entry in
             BatteryWidgetView(entry: entry)
                 .containerBackground(for: .widget) {
                     WidgetGradientBackground(accentColor: batteryAccentColor(for: entry.metrics.battery))
@@ -71,7 +71,7 @@ struct BatteryWidgetView: View {
     }
 
     private var mediumBody: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 16) {
             ZStack {
                 DonutRing(ratio: ratio, color: color)
                     .widgetAccentable()
@@ -80,20 +80,15 @@ struct BatteryWidgetView: View {
             .frame(width: 88, height: 88)
 
             VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 5) {
-                    Image(systemName: headerIcon)
-                        .font(.system(size: 11, weight: .semibold))
-                    Text("Battery")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                WidgetMediumHeader(icon: headerIcon, title: "Battery") {
                     if bat?.isCharging == true {
                         Image(systemName: "bolt.fill")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(color)
                     }
                 }
-                .foregroundStyle(.secondary)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     WidgetStatRow(label: "Status", value: statusLabel, valueColor: color)
 
                     if let health = bat?.healthPercent {
@@ -108,8 +103,8 @@ struct BatteryWidgetView: View {
                         WidgetStatRow(label: timeLabel, value: timeValue)
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
-            Spacer(minLength: 0)
         }
     }
 
@@ -137,13 +132,13 @@ struct BatteryWidgetView: View {
     }
 
     private var statusLabel: String {
-        guard let bat else { return "Battery" }
-        if bat.isCharging { return "Charging" }
-        if bat.isPluggedIn { return "Plugged" }
-        return "Battery"
+        guard let bat else { return String(localized: "Battery") }
+        if bat.isCharging { return String(localized: "Charging") }
+        if bat.isPluggedIn { return String(localized: "Plugged") }
+        return String(localized: "Battery")
     }
 
-    private var timeLabel: String {
+    private var timeLabel: LocalizedStringKey {
         (bat?.isCharging == true) ? "Full In" : "Left"
     }
 
@@ -164,10 +159,10 @@ struct BatteryWidgetView: View {
             return timeValue
         }
         if let health = bat.healthPercent {
-            return "Health \(health)%"
+            return "\(String(localized: "Health")) \(health)%"
         }
         if let cycles = bat.cycleCount {
-            return "\(cycles) cycles"
+            return "\(cycles) \(String(localized: "cycles"))"
         }
         return "\(bat.percentage)%"
     }

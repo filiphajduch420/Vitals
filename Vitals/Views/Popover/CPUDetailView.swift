@@ -30,7 +30,7 @@ struct CPUDetailView: View {
                         iconStat("thermometer.medium", "\(Int(temp))°C")
                     }
                     if let rpm = th.fanRPM {
-                        iconStat("fan.fill", rpm > 0 ? "\(rpm) RPM" : "Off")
+                        iconStat("fan.fill", rpm > 0 ? "\(rpm) RPM" : String(localized: "Off"))
                     }
                     if let watts = th.systemPower {
                         iconStat("bolt.fill", String(format: "%.1fW", watts))
@@ -43,7 +43,7 @@ struct CPUDetailView: View {
         }
     }
 
-    private func miniStat(_ label: String, _ value: String) -> some View {
+    private func miniStat(_ label: LocalizedStringKey, _ value: String) -> some View {
         VStack(spacing: 2) {
             Text(label).adaptiveSecondary()
             Text(value).fontWeight(.medium).monospacedDigit()

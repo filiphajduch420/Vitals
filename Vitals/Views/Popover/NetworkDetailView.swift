@@ -55,7 +55,7 @@ struct NetworkDetailView: View {
         }
     }
 
-    private func miniLabel(_ label: String, _ value: String) -> some View {
+    private func miniLabel(_ label: LocalizedStringKey, _ value: String) -> some View {
         VStack(spacing: 2) {
             Text(label)
                 .adaptiveSecondary()

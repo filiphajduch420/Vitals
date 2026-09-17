@@ -182,6 +182,7 @@ struct AppearanceSettingsView: View {
             appState.sectionMemory = true
             appState.sectionBattery = true
             appState.sectionSystem = true
+            appState.sectionProcesses = true
             appState.sectionDisk = false
             appState.sectionWiFi = false
             appState.sectionNetwork = false
@@ -206,6 +207,7 @@ struct AppearanceSettingsView: View {
         case .battery: return binding(\.sectionBattery)
         case .disk:    return binding(\.sectionDisk)
         case .wifi:    return binding(\.sectionWiFi)
+        case .processes: return binding(\.sectionProcesses)
         }
     }
 

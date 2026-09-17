@@ -1,0 +1,319 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%": {},
+    "%@": {},
+    "%@ free": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ volných"
+          }
+        }
+      }
+    },
+    "BATTERY": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "BATERIE"
+          }
+        }
+      }
+    },
+    "Battery": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baterie"
+          }
+        }
+      }
+    },
+    "Battery level, health, and cycle count.": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Úroveň baterie, kondice a počet cyklů."
+          }
+        }
+      }
+    },
+    "Booted": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spuštěno"
+          }
+        }
+      }
+    },
+    "Charging": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nabíjí se"
+          }
+        }
+      }
+    },
+    "Cycles": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cykly"
+          }
+        }
+      }
+    },
+    "Disk usage and free space.": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Využití disku a volné místo."
+          }
+        }
+      }
+    },
+    "Free": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volné"
+          }
+        }
+      }
+    },
+    "Full In": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plné za"
+          }
+        }
+      }
+    },
+    "Health": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kondice"
+          }
+        }
+      }
+    },
+    "Left": {
+      "comment": "Battery time remaining label.",
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zbývá"
+          }
+        }
+      }
+    },
+    "Model": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
+          }
+        }
+      }
+    },
+    "No Battery": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bez baterie"
+          }
+        }
+      }
+    },
+    "Plugged": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Napájení"
+          }
+        }
+      }
+    },
+    "STORAGE": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ÚLOŽIŠTĚ"
+          }
+        }
+      }
+    },
+    "Status": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stav"
+          }
+        }
+      }
+    },
+    "Storage": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Úložiště"
+          }
+        }
+      }
+    },
+    "System": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systém"
+          }
+        }
+      }
+    },
+    "System Info": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systémové info"
+          }
+        }
+      }
+    },
+    "Total": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celkem"
+          }
+        }
+      }
+    },
+    "UPTIME": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DOBA BĚHU"
+          }
+        }
+      }
+    },
+    "Uptime, macOS version, and Mac model.": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doba běhu, verze macOS a model Macu."
+          }
+        }
+      }
+    },
+    "Used": {
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Využito"
+          }
+        }
+      }
+    },
+    "cycles": {
+      "comment": "Battery cycle count suffix, e.g. \"342 cycles\".",
+      "extractionState": "stale",
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cyklů"
+          }
+        }
+      }
+    },
+    "macOS": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS"
+          }
+        }
+      }
+    },
+    "since last boot": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "od posledního startu"
+          }
+        }
+      }
+    },
+    "uptime": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "doba běhu"
+          }
+        }
+      }
+    },
+    "used": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "využito"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

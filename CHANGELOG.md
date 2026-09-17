@@ -2,6 +2,23 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.5] - 2026-09-17
+
+### Added
+- **Widgets that work for everyone** — the Storage, Battery, and System Info widgets now compute their data themselves inside the widget process (disk capacity via volume resource values, battery via `IOPowerSources`/IORegistry, uptime and system info via `sysctl`), so they show real data even on the pre-built (unsigned) DMG build that has no valid App Group entitlement. Widgets no longer depend on the running app to populate a shared file
+- **Battery health in the Battery widget** — the widget now surfaces battery health % and cycle count, a figure macOS doesn't expose anywhere obvious, right on your desktop
+- **System Info widget** — a new widget showing a live, ticking uptime (rendered client-side via `Text(_:style:)`, so it stays current without spending timeline refreshes), plus macOS version, Mac model, and boot time
+- **Top Processes** — a new card in the popover listing the top 5 processes by **CPU** or **Memory** (segmented switch). CPU % matches Activity Monitor, and the scan only runs while the popover is open and the section is visible, so it stays battery-friendly
+- **Czech localization** — the entire app and its widgets are now localized; the language follows your system by default, with a System / English / Čeština switch (and a Relaunch button) in General settings
+- **Check for Updates** — a button in Settings > General > About that queries the GitHub Releases API on demand and links you to a newer release when one exists. Privacy-first: it only runs when you click it, no accounts, no automatic requests
+
+### Changed
+- **Real-time widgets removed** — the System Overview, System Health, and Network Info widgets have been retired. They rendered instantaneous values (CPU/RAM gauges, Wi-Fi signal, network speeds), but WidgetKit only grants an extension a limited refresh budget (~15 minutes between reloads when the app isn't driving them), so those numbers were routinely 15 minutes stale and effectively lying. They also relied on the shared App Group file, which is empty on unsigned builds. Real-time monitoring stays where it works well: the menu bar and the popover. The remaining widgets show either semi-static data or values that are cheap to read fresh on every refresh
+- **Widget redesign** — every widget now shares a unified header, a full-width two-column layout that reads like a neat table (and never breaks long Czech labels mid-word), SF Pro Rounded typography, and monospaced digits so values don't jitter
+
+### Fixed
+- **Battery health on Apple Silicon** — capacity values are now also read from the nested `BatteryData` dictionary in the `AppleSmartBattery` service, not just the top-level keys (where `MaxCapacity` is only a percentage on Apple Silicon). Battery health % had been missing from the popover since v2.3 on these Macs
+
 ## [2.4] - 2026-09-16
 
 ### Added

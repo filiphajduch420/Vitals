@@ -69,6 +69,7 @@ struct PopoverView: View {
         case .battery: BatteryDetailView()
         case .disk:    DiskDetailView()
         case .wifi:    WiFiDetailView()
+        case .processes: TopProcessesDetailView()
         }
     }
 }

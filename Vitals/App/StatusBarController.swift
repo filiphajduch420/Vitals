@@ -80,7 +80,7 @@ final class StatusBarController {
             case .fanRPM:
                 guard let rpm = th.fanRPM else { continue }
                 addIcon("fan.fill")
-                addText(rpm > 0 ? "\(rpm)" : "Off")
+                addText(rpm > 0 ? "\(rpm)" : String(localized: "Off"))
             case .gpu:
                 guard let util = m.gpu.utilization else { continue }
                 addIcon("display")
@@ -178,6 +178,7 @@ final class StatusBarController {
 
         panel.setFrame(NSRect(x: x, y: y, width: panelWidth, height: panelHeight), display: true)
         panel.orderFrontRegardless()
+        appState.isPopoverVisible = true
 
         // Close on outside click
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
@@ -187,6 +188,7 @@ final class StatusBarController {
 
     private func hidePanel() {
         panel.orderOut(nil)
+        appState.isPopoverVisible = false
         if let monitor = globalMonitor {
             NSEvent.removeMonitor(monitor)
             globalMonitor = nil

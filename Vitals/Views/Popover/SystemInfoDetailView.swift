@@ -31,7 +31,7 @@ struct SystemInfoDetailView: View {
         }
     }
 
-    private func infoRow(_ icon: String, _ label: String, _ value: String) -> some View {
+    private func infoRow(_ icon: String, _ label: LocalizedStringKey, _ value: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
                 .adaptiveSecondary()

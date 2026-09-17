@@ -5,7 +5,7 @@ struct StorageWidget: Widget {
     let kind = "StorageWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: VitalsTimelineProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: LocalMetricsProvider()) { entry in
             StorageWidgetView(entry: entry)
                 .containerBackground(for: .widget) {
                     WidgetGradientBackground(accentColor: usageColor(entry.metrics.disk.usageRatio))
@@ -59,7 +59,7 @@ struct StorageWidgetView: View {
     }
 
     private var mediumBody: some View {
-        HStack(spacing: 18) {
+        HStack(spacing: 16) {
             ZStack {
                 DonutRing(ratio: disk.usageRatio, color: color)
                     .widgetAccentable()
@@ -68,21 +68,15 @@ struct StorageWidgetView: View {
             .frame(width: 88, height: 88)
 
             VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 5) {
-                    Image(systemName: "internaldrive.fill")
-                        .font(.system(size: 11, weight: .semibold))
-                    Text("Storage")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                }
-                .foregroundStyle(.secondary)
+                WidgetMediumHeader(icon: "internaldrive.fill", title: "Storage")
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     WidgetStatRow(label: "Used", value: Formatters.formatBytes(disk.usedSpace), valueColor: color)
                     WidgetStatRow(label: "Free", value: Formatters.formatBytes(disk.freeSpace))
                     WidgetStatRow(label: "Total", value: Formatters.formatBytes(disk.totalSpace))
                 }
+                .frame(maxWidth: .infinity)
             }
-            Spacer(minLength: 0)
         }
     }
 }

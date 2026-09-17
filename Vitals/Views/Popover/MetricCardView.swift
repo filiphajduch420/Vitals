@@ -6,7 +6,7 @@ struct MetricCardView<Content: View>: View {
 
     let metricType: MetricType
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let value: String
     let color: Color
     let history: MetricHistory
@@ -20,7 +20,7 @@ struct MetricCardView<Content: View>: View {
     init(
         metricType: MetricType,
         icon: String,
-        title: String,
+        title: LocalizedStringKey,
         value: String,
         color: Color = .accentColor,
         history: MetricHistory,

@@ -18,7 +18,7 @@ struct BatteryDetailView: View {
             ) {
                 VStack(spacing: 4) {
                     HStack {
-                        miniLabel("Status", bat.isCharging ? "Charging" : (bat.isPluggedIn ? "Plugged In" : "On Battery"))
+                        miniLabel("Status", bat.isCharging ? String(localized: "Charging") : (bat.isPluggedIn ? String(localized: "Plugged In") : String(localized: "On Battery")))
                         Spacer()
                         if let time = bat.timeRemaining, time > 0 {
                             miniLabel(bat.isCharging ? "Full In" : "Remaining", Formatters.formatDuration(time))
@@ -71,7 +71,7 @@ struct BatteryDetailView: View {
         }
     }
 
-    private func miniLabel(_ label: String, _ value: String) -> some View {
+    private func miniLabel(_ label: LocalizedStringKey, _ value: String) -> some View {
         VStack(spacing: 2) {
             Text(label)
                 .adaptiveSecondary()

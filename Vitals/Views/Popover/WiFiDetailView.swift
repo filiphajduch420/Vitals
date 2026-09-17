@@ -38,7 +38,7 @@ struct WiFiDetailView: View {
                             iconStat("arrow.up.arrow.down", "\(rate) Mbps")
                         }
                         if let ch = wifi.channel {
-                            iconStat("number", "Ch \(ch)")
+                            iconStat("number", "\(String(localized: "Ch")) \(ch)")
                         }
                     }
                     .scaledFont(10)
@@ -68,7 +68,7 @@ struct WiFiDetailView: View {
         return .red
     }
 
-    private func ipRow(_ icon: String, _ label: String, _ value: String) -> some View {
+    private func ipRow(_ icon: String, _ label: LocalizedStringKey, _ value: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .adaptiveSecondary()

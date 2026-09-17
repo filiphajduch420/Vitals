@@ -89,7 +89,7 @@
             </div>
             <div class="highlight reveal">
                 <h3>Desktop Widgets</h3>
-                <p>Beautiful Liquid Glass-style widgets with donut rings, angular gradients, status-color glow, and SF Pro Rounded typography &mdash; a full redesign for a macOS Tahoe-native feel. Five WidgetKit widgets: System Health, Storage, Battery, Network Info, and the new System Overview (Battery + Storage as donut rings side-by-side with network info, in medium and large sizes).</p>
+                <p>Beautiful Liquid Glass-style widgets with donut rings, angular gradients, status-color glow, and SF Pro Rounded typography &mdash; a macOS Tahoe-native feel. Three widgets &mdash; Storage, Battery, and System Info &mdash; that each compute their own data inside the widget process, so they show real data everywhere, even on the unsigned build with no App Group. The Battery widget surfaces health % and cycle count, and System Info shows a live, ticking uptime.</p>
             </div>
             <div class="highlight reveal">
                 <h3>Fully Customizable</h3>
@@ -106,8 +106,36 @@
             <div class="version-list">
                 <article class="version-entry reveal">
                     <div class="version-meta">
-                        <h3 class="version-name">Version 2.4</h3>
+                        <h3 class="version-name">Version 2.5</h3>
                         <span class="version-badge">Latest</span>
+                        <time class="version-date" datetime="2026-09-17">September 17, 2026</time>
+                    </div>
+                    <div class="version-body">
+                        <h4>Widgets that work for everyone</h4>
+                        <ul>
+                            <li>Storage, Battery, and System Info widgets now compute their own data inside the widget process &mdash; they show real data even on the pre-built (unsigned) build with no App Group</li>
+                            <li>The Battery widget surfaces battery health % and cycle count, a figure macOS doesn't show anywhere obvious</li>
+                            <li>New System Info widget with a live, ticking uptime that stays current without spending refresh budget, plus macOS version, Mac model, and boot time</li>
+                            <li>Real-time widgets removed (System Overview, System Health, Network Info) &mdash; WidgetKit's ~15-minute refresh budget made their instantaneous values stale and misleading; real-time lives in the menu bar and popover</li>
+                            <li>Redesigned widgets with unified headers, full-width two-column layouts, SF Pro Rounded typography, and monospaced digits</li>
+                        </ul>
+                        <h4>Added</h4>
+                        <ul>
+                            <li>Top Processes &mdash; a popover card listing the top 5 processes by CPU or Memory, with Activity Monitor-style CPU %, scanning only while the popover is open</li>
+                            <li>Czech localization across the app and widgets, with a System / English / Čeština switch and Relaunch in General settings</li>
+                            <li>Check for Updates &mdash; a privacy-first button in About that checks the GitHub Releases API only when you click it</li>
+                        </ul>
+                        <h4>Fixed</h4>
+                        <ul>
+                            <li>Battery health on Apple Silicon &mdash; capacity is now also read from the nested <code>BatteryData</code> dictionary; health % had been missing from the popover since v2.3 on these Macs</li>
+                        </ul>
+                    </div>
+                    <a href="https://github.com/filiphajduch420/Vitals/releases/tag/v2.5" class="version-download" target="_blank" rel="noopener">Download v2.5 &rarr;</a>
+                </article>
+
+                <article class="version-entry reveal">
+                    <div class="version-meta">
+                        <h3 class="version-name">Version 2.4</h3>
                         <time class="version-date" datetime="2026-09-16">September 16, 2026</time>
                     </div>
                     <div class="version-body">
@@ -329,8 +357,8 @@
                     <h3>The App</h3>
                     <p>Vitals is a lightweight system monitor that lives in your macOS menu bar. It gives you instant access to CPU, GPU, memory, battery, network, disk, and WiFi stats &mdash; all wrapped in a native Liquid Glass interface that feels right at home on macOS 26 Tahoe.</p>
                     <p>Unlike other system monitors, Vitals uses Apple's private <code>NSGlassEffectView</code> API to render authentic glass effects, not approximations. The result is a UI that looks and feels like a built-in part of macOS.</p>
-                    <p>The app also includes five desktop widgets for at-a-glance system info, full menu bar customization, and a settings panel with appearance controls including glass style variants, opacity, and text scaling.</p>
-                    <p><strong>A note on widgets:</strong> the pre-built (unsigned) download has no valid App Group entitlement, so the desktop widgets may not display data. For fully working widgets, build from source with your own Apple ID &mdash; even a free one works.</p>
+                    <p>The app also includes three desktop widgets for at-a-glance system info, a Top Processes card, Czech localization, full menu bar customization, and a settings panel with appearance controls including glass style variants, opacity, and text scaling.</p>
+                    <p><strong>A note on widgets:</strong> as of v2.5 the desktop widgets work on the pre-built (unsigned) download too &mdash; they compute their own data inside the widget process instead of relying on the App Group. Building from source with your own Apple ID (even a free one) is still worthwhile: with a valid App Group entitlement the widgets can prefer fresh data straight from the running app.</p>
                 </div>
 
                 <div class="about-section reveal">
