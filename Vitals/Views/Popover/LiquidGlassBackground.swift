@@ -16,7 +16,22 @@ private class GlassContainerView: NSView {
 
 // MARK: - Glass background only
 
-struct LiquidGlassBackgroundView: NSViewRepresentable {
+struct LiquidGlassBackgroundView: View {
+    let cornerRadius: CGFloat
+    let variant: GlassVariant
+
+    var body: some View {
+        // Offscreen promo renders cannot capture the window-server glass, so
+        // promo mode draws its own stand-in (see Promo.swift).
+        if Promo.isActive {
+            PromoGlassSurface(cornerRadius: cornerRadius)
+        } else {
+            NativeGlassView(cornerRadius: cornerRadius, variant: variant)
+        }
+    }
+}
+
+private struct NativeGlassView: NSViewRepresentable {
     let cornerRadius: CGFloat
     let variant: GlassVariant
 

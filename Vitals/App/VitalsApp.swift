@@ -20,6 +20,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        // `--promo <dir>` renders the marketing screenshots and quits; no
+        // monitoring, no status item.
+        if Promo.isActive {
+            Promo.run(appState: appState)
+            return
+        }
         appState.startMonitoring()
         statusBarController = StatusBarController(appState: appState)
     }

@@ -2,6 +2,12 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.5.1] - 2026-11-11
+
+### Added
+- **Battery capsule** — a new *Battery Style* option in Settings > General > Menu Bar Items. *Capsule* draws the charge inside a battery shape right in the menu bar (a bolt while charging, a plug when on power but not charging, red at 20 % or less on battery); with *Battery Time* on, the time remaining joins it, e.g. `6:28 · 95%`. The original icon style stays the default ([#1](https://github.com/filiphajduch420/Vitals/issues/1))
+- **New screenshots** — the README and website images are now rendered by the app itself with fixed demo readings (`tools/screenshots.sh`)
+
 ## [2.5] - 2026-09-17
 
 ### Added

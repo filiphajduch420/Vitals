@@ -930,6 +930,46 @@
           }
         }
       }
+    },
+    "Icon" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ikona"
+          }
+        }
+      }
+    },
+    "Capsule" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapsle"
+          }
+        }
+      }
+    },
+    "Battery Style" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Styl baterie"
+          }
+        }
+      }
+    },
+    "Capsule shows the charge inside a battery shape. With Battery Time on, the time remaining is shown inside it too." : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapsle ukazuje nabití přímo v ikoně baterie. Se zapnutou výdrží baterie v ní je i zbývající čas."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

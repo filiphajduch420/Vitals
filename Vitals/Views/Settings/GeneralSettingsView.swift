@@ -199,6 +199,16 @@ struct GeneralSettingsView: View {
                     }
                 }
 
+                Picker("Battery Style", selection: Binding(
+                    get: { appState.batteryStyle },
+                    set: { appState.batteryStyle = $0 }
+                )) {
+                    ForEach(BatteryStyle.allCases) { style in
+                        Text(style.label).tag(style)
+                    }
+                }
+                .pickerStyle(.segmented)
+
                 Button {
                     resetMenuBarDefaults()
                 } label: {
@@ -207,6 +217,10 @@ struct GeneralSettingsView: View {
                 .buttonStyle(.borderless)
             } header: {
                 Label("Menu Bar Items", systemImage: "menubar.rectangle")
+            } footer: {
+                Text("Capsule shows the charge inside a battery shape. With Battery Time on, the time remaining is shown inside it too.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section {
@@ -364,6 +378,7 @@ struct GeneralSettingsView: View {
             appState.barNetworkUp = false
             appState.barBattery = false
             appState.barBatteryTime = false
+            appState.batteryStyle = .icon
             appState.barDisk = false
             appState.barIP = false
         }

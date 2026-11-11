@@ -27,6 +27,10 @@ final class AppState {
     /// `.task` cancellation — this guarantees no process scan runs while closed.
     var isPopoverVisible: Bool = false
 
+    /// Where settings are persisted. Promo renders (`--promo`) use a throwaway
+    /// domain so they never touch the user's real preferences.
+    private static var defaults: UserDefaults { Promo.isActive ? Promo.defaults : .standard }
+
     private let monitor = SystemMonitor()
     private let processMonitor = ProcessMonitor()
     let powerMonitor = PowerStateMonitor()
@@ -53,6 +57,10 @@ final class AppState {
     var barDisk: Bool = false { didSet { save(barDisk, forKey: "barDisk") } }
     var barIP: Bool = false { didSet { save(barIP, forKey: "barIP") } }
     var barBatteryTime: Bool = false { didSet { save(barBatteryTime, forKey: "barBatteryTime") } }
+    /// Battery icon style in the menu bar (icon + percentage, or the capsule).
+    var batteryStyle: BatteryStyle = .icon {
+        didSet { Self.defaults.set(batteryStyle.rawValue, forKey: "batteryStyle"); onMetricsUpdate?() }
+    }
 
     var menuBarOrder: [MenuBarItem] = MenuBarItem.allCases {
         didSet { saveMenuBarOrder() }
@@ -160,7 +168,7 @@ final class AppState {
     // MARK: - Lifecycle
 
     init() {
-        let d = UserDefaults.standard
+        let d = Self.defaults
         if !d.bool(forKey: "v4init") {
             d.set(true, forKey: "v4init")
             d.set(true, forKey: "barCPUUsage")
@@ -202,6 +210,7 @@ final class AppState {
         barDisk = d.bool(forKey: "barDisk")
         barIP = d.bool(forKey: "barIP")
         barBatteryTime = d.bool(forKey: "barBatteryTime")
+        batteryStyle = BatteryStyle(rawValue: d.string(forKey: "batteryStyle") ?? "") ?? .icon
         menuBarOrder = loadMenuBarOrder()
         sectionCPU = d.bool(forKey: "sectionCPU")
         sectionMemory = d.bool(forKey: "sectionMemory")
@@ -236,6 +245,8 @@ final class AppState {
     }
 
     func startMonitoring() {
+        // Promo renders show fixed demo readings only, never live data.
+        guard !Promo.isActive else { return }
         let interval = effectiveInterval
         let saving = powerMonitor.isOnBattery
         let includePublicIP = enablePublicIPLookup
@@ -349,13 +360,13 @@ final class AppState {
     }
 
     private func save(_ value: Bool, forKey key: String) {
-        UserDefaults.standard.set(value, forKey: key)
+        Self.defaults.set(value, forKey: key)
     }
     private func save(_ value: Double, forKey key: String) {
-        UserDefaults.standard.set(value, forKey: key)
+        Self.defaults.set(value, forKey: key)
     }
     private func save(_ value: Int, forKey key: String) {
-        UserDefaults.standard.set(value, forKey: key)
+        Self.defaults.set(value, forKey: key)
     }
     func isMenuBarItemEnabled(_ item: MenuBarItem) -> Bool {
         switch item {
@@ -393,11 +404,11 @@ final class AppState {
 
     private func saveMenuBarOrder() {
         let raw = menuBarOrder.map(\.rawValue)
-        UserDefaults.standard.set(raw, forKey: "menuBarOrder")
+        Self.defaults.set(raw, forKey: "menuBarOrder")
     }
 
     private func loadMenuBarOrder() -> [MenuBarItem] {
-        guard let raw = UserDefaults.standard.stringArray(forKey: "menuBarOrder") else {
+        guard let raw = Self.defaults.stringArray(forKey: "menuBarOrder") else {
             return MenuBarItem.allCases
         }
         var result = raw.compactMap { MenuBarItem(rawValue: $0) }
@@ -409,10 +420,10 @@ final class AppState {
 
     private func saveSectionOrder() {
         let raw = sectionOrder.map(\.rawValue)
-        UserDefaults.standard.set(raw, forKey: "sectionOrder")
+        Self.defaults.set(raw, forKey: "sectionOrder")
     }
     private func loadSectionOrder() -> [PopoverSection] {
-        guard let raw = UserDefaults.standard.stringArray(forKey: "sectionOrder") else {
+        guard let raw = Self.defaults.stringArray(forKey: "sectionOrder") else {
             return PopoverSection.allCases
         }
         var result = raw.compactMap { PopoverSection(rawValue: $0) }

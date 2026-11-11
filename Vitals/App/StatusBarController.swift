@@ -39,6 +39,12 @@ final class StatusBarController {
 
     private func updateLabel() {
         guard let button = statusItem.button else { return }
+        button.attributedTitle = Self.label(for: appState)
+    }
+
+    /// The menu bar text: an icon and a value for each enabled item, in the
+    /// user's order. Also used by the promo renderer (see Promo.swift).
+    static func label(for appState: AppState) -> NSAttributedString {
         let m = appState.metrics
         let th = m.thermal
 
@@ -57,6 +63,15 @@ final class StatusBarController {
                 attachment.append(NSAttributedString(attachment: a))
                 attachment.append(NSAttributedString(string: " ", attributes: attrs))
             }
+        }
+
+        func addCapsule(_ image: NSImage) {
+            let a = NSTextAttachment()
+            a.image = image
+            // Centre the capsule on the digits of the neighbouring text.
+            a.bounds = NSRect(x: 0, y: (font.capHeight - image.size.height) / 2,
+                              width: image.size.width, height: image.size.height)
+            attachment.append(NSAttributedString(attachment: a))
         }
 
         func addText(_ text: String) {
@@ -100,10 +115,21 @@ final class StatusBarController {
                 addText(Formatters.formatBytesPerSec(m.network.uploadSpeed))
             case .battery:
                 guard let bat = m.battery else { continue }
-                addIcon(bat.isCharging ? "battery.100percent.bolt" : "battery.75percent")
-                addText("\(bat.percentage)%")
+                if appState.batteryStyle == .capsule {
+                    // The capsule also carries the time remaining when Battery Time is on.
+                    let time = appState.barBatteryTime ? bat.timeRemaining : nil
+                    addCapsule(BatteryCapsule.image(percentage: bat.percentage,
+                                                    timeRemaining: time,
+                                                    isCharging: bat.isCharging,
+                                                    isPluggedIn: bat.isPluggedIn))
+                } else {
+                    addIcon(bat.isCharging ? "battery.100percent.bolt" : "battery.75percent")
+                    addText("\(bat.percentage)%")
+                }
             case .batteryTime:
                 guard let bat = m.battery else { continue }
+                // Shown inside the capsule instead.
+                if appState.batteryStyle == .capsule && appState.barBattery { continue }
                 addIcon("clock")
                 if let time = bat.timeRemaining, time > 0 {
                     addText(Formatters.formatDuration(time))
@@ -123,7 +149,7 @@ final class StatusBarController {
             addSpacer()
         }
 
-        button.attributedTitle = attachment
+        return attachment
     }
 
     // MARK: - Transparent Glass Panel

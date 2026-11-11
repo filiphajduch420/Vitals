@@ -4,7 +4,9 @@ A lightweight macOS menu bar app that monitors your system in real time with a b
 
 Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 
-**Current version: 2.5** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
+![Vitals in the menu bar with its popover open and the Vitals widgets on the desktop](media/promo/hero.png)
+
+**Current version: 2.5.1** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 > **Note:** This app is not signed with an Apple Developer certificate. When you first open it, macOS will show a warning saying it "cannot verify the app is free of malware." To open it, go to **System Settings > Privacy & Security** and click **"Open Anyway"** next to the Vitals message. I'm a student and can't afford the $99/year Apple Developer Program fee, but the app is fully open source — you can review every line of code and build it yourself.
 
@@ -32,16 +34,32 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 ## Screenshots
 
 ### Popover
-![Vitals Popover](media/gui.png)
+<p align="center">
+  <img src="media/promo/popover.png" width="45%" alt="The Vitals popover with all sections">
+  &nbsp;
+  <img src="media/promo/popover-cs.png" width="45%" alt="The Vitals popover in Czech">
+</p>
 
 ### Menu Bar
-![Menu Bar](media/menu_bar.png)
+![Menu Bar](media/promo/menubar.png)
 
-### Settings - Appearance
-![Settings Appearance](media/settings_app.png)
+### Desktop Widgets
+![Storage, Battery and System Info widgets](media/promo/widgets.png)
 
-### Settings - General
-![Settings General](media/settings_general.png)
+### Settings
+<p align="center">
+  <img src="media/promo/settings-general.png" width="32%" alt="Settings – General">
+  <img src="media/promo/settings-menubar.png" width="32%" alt="Settings – Menu Bar Items">
+  <img src="media/promo/settings-appearance.png" width="32%" alt="Settings – Appearance">
+</p>
+
+<sub>The screenshots are rendered by the app itself with fixed demo readings: run `tools/screenshots.sh` to regenerate them.</sub>
+
+## What's New in v2.5.1
+
+- **Battery capsule** — choose *Battery Style → Capsule* in Settings › General › Menu Bar Items to see the charge inside a battery shape in the menu bar. Turn on *Battery Time* as well and the time remaining joins it, e.g. `6:28 · 95%`. A bolt shows while charging, a plug when plugged in but not charging, and it turns red at 20 % or less on battery
+
+<p align="center"><img src="media/battery-capsule.png" width="90%" alt="Battery capsule in the menu bar: on battery, charging, plugged in and low battery, on a light and a dark menu bar"></p>
 
 ## What's New in v2.5
 
