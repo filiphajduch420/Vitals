@@ -21,9 +21,12 @@ enum BatteryStyle: String, CaseIterable, Identifiable, Sendable {
 /// small terminal on the right and the text cut out of it, so the menu bar
 /// shows through the letters.
 ///
-/// The image is a template, so macOS tints it like any other menu bar icon
-/// (dark on a light menu bar, light on a dark one). Low battery (20 % or less,
-/// on battery power) is drawn in red instead.
+/// The capsule sits in the status item's attributed title as a text
+/// attachment, and AppKit only tints SF Symbol attachments, never a plain
+/// template image. So the image is not a template: it resolves the text colour
+/// each time it is drawn, under the menu bar's current appearance, and so turns
+/// dark or light together with the text and the system icons. Low battery
+/// (20 % or less, on battery power) is drawn in red instead.
 enum BatteryCapsule {
     static func image(percentage: Int, timeRemaining: TimeInterval?, isCharging: Bool, isPluggedIn: Bool) -> NSImage {
         var text = "\(percentage)%"
@@ -55,7 +58,12 @@ enum BatteryCapsule {
 
         let image = NSImage(size: size, flipped: false) { _ in
             guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
-            let fill: NSColor = isLow ? .systemRed : .black
+            // Dynamic colours resolve against NSAppearance.current, which AppKit
+            // sets to the status bar button's appearance while it draws.
+            // Pure black / white like the menu bar text (the dynamic text colours are slightly
+            // translucent and would look greyer than the icons next to it).
+            let dark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            let fill: NSColor = isLow ? .systemRed : (dark ? .white : .black)
 
             // Body
             let body = NSRect(x: 0, y: 0, width: bodyWidth, height: bodyHeight)
@@ -82,7 +90,10 @@ enum BatteryCapsule {
             ctx.setBlendMode(.normal)
             return true
         }
-        image.isTemplate = !isLow
+        // Redraw on every use instead of keeping a bitmap from an earlier
+        // appearance, so switching the menu bar between light and dark updates
+        // the capsule right away.
+        image.cacheMode = .never
         image.accessibilityDescription = String(localized: "Battery") + " " + text
         return image
     }

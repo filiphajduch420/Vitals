@@ -2,6 +2,11 @@
 
 All notable changes to Vitals will be documented in this file.
 
+## [2.5.2] - 2026-11-23
+
+### Fixed
+- **Battery capsule on a dark menu bar** — the capsule now turns white together with the other menu bar icons when the menu bar goes dark (dark wallpaper, Dark Mode, or a full-screen/dark app), instead of staying black, and is as solid black as the other icons on a light menu bar
+
 ## [2.5.1] - 2026-11-11
 
 ### Added

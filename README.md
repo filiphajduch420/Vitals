@@ -6,7 +6,7 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 
 ![Vitals in the menu bar with its popover open and the Vitals widgets on the desktop](media/promo/hero.png)
 
-**Current version: 2.5.1** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
+**Current version: 2.5.2** — See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
 > **Note:** This app is not signed with an Apple Developer certificate. When you first open it, macOS will show a warning saying it "cannot verify the app is free of malware." To open it, go to **System Settings > Privacy & Security** and click **"Open Anyway"** next to the Vitals message. I'm a student and can't afford the $99/year Apple Developer Program fee, but the app is fully open source — you can review every line of code and build it yourself.
 
@@ -54,6 +54,10 @@ Built with SwiftUI and designed for **macOS 26 (Tahoe)**.
 </p>
 
 <sub>The screenshots are rendered by the app itself with fixed demo readings: run `tools/screenshots.sh` to regenerate them.</sub>
+
+## What's New in v2.5.2
+
+- **Fixed: battery capsule on a dark menu bar** — the capsule now turns white with the other menu bar icons instead of staying black, and matches their solid black on a light menu bar
 
 ## What's New in v2.5.1
 
